@@ -1,4 +1,4 @@
-import { hasPermission } from "@/auth";
+import { hasPermission } from "@/features/auth/token";
 import {
   Box,
   Button,
@@ -12,15 +12,15 @@ import {
   IconButton,
 } from "@mui/material";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { Menu as MenuIcon } from "@mui/icons-material";
 
-import { AccountPanel } from "@/components/panels/account-panel";
+import { AccountPanel } from "@/features/auth/account-menu";
 import { headerItems } from "@/components/navbar/items";
-import { utilities } from "@/utils";
+import * as utilities from "@/utils/utilities";
 import { LogoText } from "@/components/basics";
 import Logo from "@/components/basics/logo";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/features/auth/use-auth";
 
 export function HeaderComponent() {
   const theme = useTheme();
@@ -178,9 +178,9 @@ type HeaderItemProps = {
 function HeaderItem(props: HeaderItemProps) {
   const { permission, href, color, title, newTab, onClick } = props;
   const navigate = useNavigate();
-  const { payload } = useAuth();
+  const userPermission = useAuth(state => state.payload.permission);
 
-  if (hasPermission(payload, permission)) {
+  if (hasPermission({ permission: userPermission }, permission)) {
     return (
       <Box
         style={{
@@ -222,7 +222,7 @@ function HeaderMenu(props: HeaderMenuProps) {
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const navigate = useNavigate();
-  const { payload } = useAuth();
+  const userPermission = useAuth(state => state.payload.permission);
 
   function openMenu(event: React.MouseEvent<HTMLButtonElement>) {
     if (anchorEl !== event.currentTarget) {
@@ -247,7 +247,7 @@ function HeaderMenu(props: HeaderMenuProps) {
       </Button>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={closeMenu}>
         {menu.map((menu) => {
-          if (hasPermission(payload, menu.permission)) {
+          if (hasPermission({ permission: userPermission }, menu.permission)) {
             return (
               <MenuItem
                 key={menu.title}

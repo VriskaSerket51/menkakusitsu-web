@@ -1,6 +1,6 @@
 import { LogoText } from "@/components/basics/styled-text";
 import { Box, BoxProps } from "@mui/material";
-import { Link } from "@/router";
+import { Link } from "react-router";
 import type { TypographyProps } from "@mui/material";
 
 type LogoProps = BoxProps & {

@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import { TransitionProps } from "@mui/material/transitions";
-import { ReactElement, ReactNode, forwardRef } from "react";
+import { ReactElement, ReactNode, forwardRef, useEffect, useRef } from "react";
 
 const Transition = forwardRef(function Transition(
   props: TransitionProps & {
@@ -28,10 +28,17 @@ type DialogComponentProps = {
   onNo?: VoidFunction;
   onCancel?: VoidFunction;
   close: VoidFunction;
+  onExited: VoidFunction;
 };
 
 export function DialogComponent(props: DialogComponentProps) {
-  const { isOpened, title, content, onYes, onNo, onCancel, close } = props;
+  const { isOpened, title, content, onYes, onNo, onCancel, close, onExited } = props;
+
+  const entered = useRef(false);
+  useEffect(() => {
+    // A dialog closed before its first render has no exit transition to finish.
+    if (!isOpened && !entered.current) onExited();
+  }, [isOpened, onExited]);
 
   return (
     <Dialog
@@ -44,6 +51,7 @@ export function DialogComponent(props: DialogComponentProps) {
           onCancel();
         }
       }}
+      slotProps={{ transition: { onEnter: () => { entered.current = true; }, onExited } }}
       slots={{
         transition: Transition
       }}

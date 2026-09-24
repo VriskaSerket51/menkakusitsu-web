@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 
-import { ThemeType } from "@/components/theme";
+import type { ThemeType } from "./theme";
 import christmasImg from "@/assets/christmas.png";
 
 type ThemeLayoutProps = {

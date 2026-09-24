@@ -1,13 +1,8 @@
-import { type TokenPayload, createTokenPayload } from "@/auth";
-import { LoadableComponent } from "@loadable/component";
 import { SHA3 } from "sha3";
-import { Buffer } from "buffer";
 import dayjs from "dayjs";
 import "dayjs/locale/ko";
 import relativeTime from "dayjs/plugin/relativeTime";
 import localizedFormat from "dayjs/plugin/localizedFormat";
-import { topbar } from "@/components/topbar";
-import { getAccessToken } from "@/utils/storage";
 
 dayjs.locale("ko");
 dayjs.extend(relativeTime);
@@ -31,13 +26,6 @@ export const getDayInfo = () => {
   };
 };
 
-export const dynamicLoader = async (component: LoadableComponent<unknown>) => {
-  topbar.show();
-  component.preload();
-  topbar.hide();
-  return null;
-};
-
 export const arrayRemove = <T>(array: Array<T>, item: T): Array<T> => {
   const index = array.indexOf(item);
   return arrayRemoveAt<T>(array, index);
@@ -51,8 +39,11 @@ export const arrayRemoveAt = <T>(array: Array<T>, index: number): Array<T> => {
 };
 
 export const validateEmail = (email: string): boolean => {
-  const regex = new RegExp(/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/g);
-  return regex.test(email);
+  const input = document.createElement("input");
+  input.type = "email";
+  input.required = true;
+  input.value = email;
+  return input.checkValidity();
 };
 
 export const getParameter = (
@@ -69,25 +60,6 @@ export const getParameter = (
 
 export const openInNewTab = (url: string) => {
   window.open(url, "_blank", "noopener noreferrer");
-};
-
-export const parseJwt = (token: string | null) => {
-  if (!token) {
-    return createTokenPayload();
-  }
-  try {
-    return Object.assign(
-      createTokenPayload(),
-      JSON.parse(Buffer.from(token.split(".")[1], "base64").toString("utf-8"))
-    );
-  } catch (e) {
-    return createTokenPayload();
-  }
-};
-
-export const getTokenPayload = () => {
-  const accessToken = getAccessToken();
-  return parseJwt(accessToken);
 };
 
 export const redirectToHome = () => {

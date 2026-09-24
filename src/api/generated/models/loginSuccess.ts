@@ -11,6 +11,5 @@ export interface LoginSuccess {
   status: LoginSuccessStatus;
   message: string;
   accessToken: string;
-  refreshToken: string;
   callbacks: string[];
 }

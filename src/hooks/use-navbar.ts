@@ -1,11 +1,11 @@
 import { create } from "zustand";
 
-type NavbarProps = {
+type NavbarState = {
   noHeader?: boolean;
   noFooter?: boolean;
 };
 
-export const useNavbar = create<NavbarProps>(() => ({
+export const useNavbar = create<NavbarState>(() => ({
   noHeader: false,
   noFooter: false,
 }));

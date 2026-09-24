@@ -1,4 +1,4 @@
-import { Permission } from "@/auth";
+import { Permission } from "@/features/auth/token";
 
 export const headerItems = [
   {

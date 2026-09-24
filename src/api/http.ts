@@ -1,15 +1,18 @@
-import axios, { type AxiosRequestConfig } from "axios";
+import axios, { type RawAxiosHeaders, type AxiosRequestConfig } from "axios";
 
-/** Public login transport. Authentication/refresh is intentionally not required. */
-export const apiHttp = async <T>(
-  config: AxiosRequestConfig,
-  options?: AxiosRequestConfig,
-): Promise<T> => {
+/** Generated-client transport. Session handling is supplied by the request runner. */
+export const apiHttp = async <T>(config: AxiosRequestConfig, options?: AxiosRequestConfig): Promise<T> => {
+  const merged = axios.mergeConfig(config, { ...config, ...options });
+  if (["/v1/auth/login", "/v1/auth/refresh", "/v1/auth/logout"].includes(config.url ?? "")) {
+    merged.withCredentials = true;
+    merged.headers = axios.AxiosHeaders.from(merged.headers as RawAxiosHeaders);
+    merged.headers.set("X-CSRF-Protection", "1");
+    merged.headers.delete("Authorization");
+  }
   const response = await axios<T>({
     baseURL: import.meta.env?.VITE_API_PREFIX ?? "",
     timeout: 5000,
-    ...config,
-    ...options,
+    ...merged,
   });
   return response.data;
 };

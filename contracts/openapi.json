@@ -246,7 +246,21 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-CSRF-Protection",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1"
+              ]
+            },
+            "description": "Requires an Origin matching WEB_PREFIX. Browsers must include credentials. Refresh tokens are only returned through an HttpOnly cookie."
+          }
+        ]
       }
     },
     "/v1/auth/refresh": {
@@ -257,7 +271,7 @@
         ],
         "security": [
           {
-            "refreshToken": []
+            "refreshCookie": []
           }
         ],
         "responses": {
@@ -321,7 +335,21 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-CSRF-Protection",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1"
+              ]
+            },
+            "description": "Requires an Origin matching WEB_PREFIX. Browsers must include credentials. Refresh tokens are only returned through an HttpOnly cookie."
+          }
+        ]
       }
     },
     "/v1/auth/logout": {
@@ -332,7 +360,7 @@
         ],
         "security": [
           {
-            "accessToken": []
+            "refreshCookie": []
           }
         ],
         "responses": {
@@ -396,7 +424,21 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-CSRF-Protection",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1"
+              ]
+            },
+            "description": "Requires an Origin matching WEB_PREFIX. Browsers must include credentials. Refresh tokens are only returned through an HttpOnly cookie."
+          }
+        ]
       }
     },
     "/v1/auth/reset/password": {
@@ -2936,11 +2978,11 @@
         "bearerFormat": "JWT",
         "description": "Access token returned by login or refresh."
       },
-      "refreshToken": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT",
-        "description": "Refresh token in the Authorization header, not the request body."
+      "refreshCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "menkakusitsu-refresh",
+        "description": "Rotating HttpOnly refresh cookie; not available in response JSON or JavaScript."
       }
     },
     "schemas": {
@@ -3681,9 +3723,6 @@
           "accessToken": {
             "type": "string"
           },
-          "refreshToken": {
-            "type": "string"
-          },
           "callbacks": {
             "type": "array",
             "items": {
@@ -3695,7 +3734,6 @@
           "status",
           "message",
           "accessToken",
-          "refreshToken",
           "callbacks"
         ],
         "additionalProperties": false
@@ -3762,16 +3800,12 @@
           },
           "accessToken": {
             "type": "string"
-          },
-          "refreshToken": {
-            "type": "string"
           }
         },
         "required": [
           "status",
           "message",
-          "accessToken",
-          "refreshToken"
+          "accessToken"
         ],
         "additionalProperties": false
       },

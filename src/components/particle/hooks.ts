@@ -1,10 +1,10 @@
 import { create } from "zustand";
 
-export type ParticleManagerProps = {
+export type ParticleState = {
   showParticle: boolean;
 };
 
-export const useParticleManagerStore = create<ParticleManagerProps>(() => ({
+export const useParticleManagerStore = create<ParticleState>(() => ({
   showParticle: true,
 }));
 

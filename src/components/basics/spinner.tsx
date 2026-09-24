@@ -1,4 +1,4 @@
-import { Text } from "@/components/basics";
+import { Text } from "./styled-text";
 import { Box, CircularProgress } from "@mui/material";
 
 type SpinnerProps = {

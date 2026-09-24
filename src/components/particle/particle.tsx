@@ -1,6 +1,6 @@
 import { ParticlesProvider } from "@tsparticles/react";
 import { loadFull } from "tsparticles";
-import { getThemeType, ThemeType } from "@/components/theme";
+import { getThemeType, type ThemeType } from "@/components/theme/theme";
 import { LeafParticle } from "@/components/particle/leaf";
 import { SakuraParticle } from "@/components/particle/sakura";
 import { SnowParticle } from "@/components/particle/snow";

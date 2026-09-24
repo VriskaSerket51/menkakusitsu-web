@@ -1,5 +1,5 @@
 import { postLogin } from '../src/api/generated/client';
-import type { TokenPayload } from '../src/auth';
+import type { TokenPayload } from '../src/features/auth/token';
 import type { PermissionValues } from '../src/api/generated/models';
 
 function sharedAuthTypeChecks() {
@@ -16,6 +16,8 @@ async function contractTypeChecks() {
   // @ts-expect-error: id is a string, not a number.
   postLogin({ id: 7, password: 'digest' });
   const result = await postLogin({ id: 'student', password: 'digest' });
+  // @ts-expect-error Refresh credentials are available only through HttpOnly cookies.
+  result.refreshToken;
   const token: string = result.accessToken;
   const successStatus: 0 = result.status;
 }

@@ -1,4 +1,4 @@
-export * from "./link";
-export * from "./logo";
-export * from "./styled-button";
-export * from "./styled-text";
+export { IconLink, IconNavLink } from "./link";
+
+export { SubmitButton } from "./styled-button";
+export { Text, TitleText, LogoText } from "./styled-text";

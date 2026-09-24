@@ -11,5 +11,4 @@ export interface RefreshSuccess {
   status: RefreshSuccessStatus;
   message: string;
   accessToken: string;
-  refreshToken: string;
 }

@@ -3,8 +3,8 @@ import { onMessage } from "firebase/messaging";
 import { useEffect, useState } from "react";
 import { useSnackbar } from "notistack";
 
-import { DefaultSnackbar } from "@/components/snackbar";
-import { firebase } from "@/utils";
+import { DefaultSnackbar } from "@/components/snackbar/default";
+import * as firebase from "@/utils/firebase.client";
 
 export function FirebaseComponent() {
   const [messaging] = useState(firebase.getFirebaseMessaging());

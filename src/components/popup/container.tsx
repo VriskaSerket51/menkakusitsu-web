@@ -1,24 +1,25 @@
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation } from "react-router";
 
-import { closeAll, useDialogContainerStore } from "@/components/popup/hooks";
+import { closeAll, closeDialog, removeClosedDialog, useDialogContainerStore } from "@/components/popup/hooks";
 import { DialogComponent } from "@/components/popup/dialog";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/features/auth/use-auth";
 
 export function DialogContainer() {
-  const { dialogs } = useDialogContainerStore();
+  const dialogs = useDialogContainerStore(state => state.dialogs);
 
   const location = useLocation();
-  const { payload } = useAuth();
+  const uid = useAuth(state => state.payload.uid);
+  const sid = useAuth(state => state.payload.sid);
 
   useEffect(() => {
     closeAll();
-  }, [location, payload]);
+  }, [location, uid, sid]);
 
   return (
     <>
       {dialogs.map((dialog) => {
-        const { id, isOpened, title, content, onYes, onNo, onCancel, close } =
+        const { id, isOpened, title, content, onYes, onNo, onCancel } =
           dialog;
 
         return (
@@ -30,7 +31,8 @@ export function DialogContainer() {
             onYes={onYes}
             onNo={onNo}
             onCancel={onCancel}
-            close={close}
+            close={() => closeDialog(id)}
+            onExited={() => removeClosedDialog(id)}
           />
         );
       })}

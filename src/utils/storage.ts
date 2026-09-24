@@ -1,9 +1,7 @@
-import { v4 as uuid } from "uuid";
-
 export const getDeviceId = () => {
   let deviceId = localStorage.getItem("device-id");
   if (!deviceId) {
-    deviceId = uuid();
+    deviceId = crypto.randomUUID();
     localStorage.setItem("device-id", deviceId);
   }
   return deviceId;
@@ -22,22 +20,12 @@ export const savePushList = (pushList: NonNullable<unknown>) => {
   localStorage.setItem("has-push", JSON.stringify(pushList));
 };
 
-export const getAccessToken = () => {
-  return localStorage.getItem("access-token");
-};
-
-export const getRefreshToken = () => {
-  return localStorage.getItem("refresh-token");
-};
-
-export const saveTokens = (accessToken: string, refreshToken: string) => {
-  localStorage.setItem("access-token", accessToken);
-  localStorage.setItem("refresh-token", refreshToken);
-};
-
-export const clearTokens = () => {
-  localStorage.setItem("access-token", "");
-  localStorage.setItem("refresh-token", "");
+/** Remove credentials left by versions that persisted JWTs. */
+export const removeLegacyTokens = () => {
+  try {
+    localStorage.removeItem("access-token");
+    localStorage.removeItem("refresh-token");
+  } catch { /* Storage may be disabled; current authentication does not use it. */ }
 };
 
 export const getPostListSize = () => {

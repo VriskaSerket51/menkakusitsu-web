@@ -1,5 +1,11 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["src/api/**/*.ts", "src/vite-env.d.ts", "test/login.types.ts"],
+  "include": [
+    "src/api/**/*.ts",
+    "src/vite-env.d.ts",
+    "test/login.types.ts",
+    "test/routes.types.ts",
+    ".react-router/types/**/*"
+  ],
   "references": []
 }

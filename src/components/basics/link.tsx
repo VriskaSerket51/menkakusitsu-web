@@ -1,8 +1,8 @@
 import { Box, Link, useTheme } from "@mui/material";
 import { Link as LinkIcon } from "@mui/icons-material";
 import { ReactNode } from "react";
-import { Link as NavLink } from "react-router-dom";
-import { Text } from "@/components/basics";
+import { Link as NavLink } from "react-router";
+import { Text } from "./styled-text";
 
 type IconLinkProps = {
   href: string;
@@ -37,11 +37,11 @@ export function IconLink(props: IconLinkProps) {
   );
 }
 
-interface IconNavLinkProps {
+type IconNavLinkProps = {
   to: string;
   icon?: ReactNode;
   label: string;
-}
+};
 
 export function IconNavLink(props: IconNavLinkProps) {
   const { to, icon, label } = props;

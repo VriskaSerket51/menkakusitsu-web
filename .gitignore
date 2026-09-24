@@ -30,3 +30,6 @@ dist-ssr
 .env.production
 
 src/_temp_pages/
+
+# React Router generated route types
+.react-router/

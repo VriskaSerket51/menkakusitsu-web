@@ -1,14 +1,14 @@
 import { create } from "zustand";
 
-import { storage } from "@/utils";
+import * as storage from "@/utils/storage";
 import { setColorScheme } from "@/utils/storage";
 
-type ColorSchemeProps = {
+type ColorSchemeState = {
   scheme: storage.ColorScheme;
 };
 
-export const useColorScheme = create<ColorSchemeProps>(() => ({
-  scheme: storage.getColorScheme(),
+export const useColorScheme = create<ColorSchemeState>(() => ({
+  scheme: typeof window === "undefined" ? "light" : storage.getColorScheme(),
 }));
 
 export function changeColorScheme(scheme: storage.ColorScheme) {
