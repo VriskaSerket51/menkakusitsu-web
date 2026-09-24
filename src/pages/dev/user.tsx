@@ -1,4 +1,5 @@
-import { Permission, v1 } from "@common-jshs/menkakusitsu-lib";
+import { Permission } from "@/auth";
+import type * as apiTypes from "@/api/types";
 import {
   Box,
   Checkbox,
@@ -10,19 +11,19 @@ import {
 } from "@mui/material";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
-import Popup from "@/components/popup";
-import { Api } from "@/utils";
+import popup from "@/components/popup";
+import { api } from "@/utils";
 import { TitleText } from "@/components/basics";
 
 type UserBoxProps = {
-  user: v1.UserInfo;
-  setUsers: Dispatch<SetStateAction<v1.UserInfo[]>>;
+  user: apiTypes.UserInfo;
+  setUsers: Dispatch<SetStateAction<apiTypes.UserInfo[]>>;
 };
 
 function UserBox(props: UserBoxProps) {
   const { user, setUsers } = props;
   return (
-    <Grid item xs={3}>
+    <Grid size={3}>
       <FormControlLabel
         label={user.name}
         control={
@@ -30,15 +31,15 @@ function UserBox(props: UserBoxProps) {
             color="secondary"
             onChange={(event) => {
               if (event.target.checked) {
-                Popup.startLoading("처리 중입니다...");
-                Api.deleteSecession({
+                popup.startLoading("처리 중입니다...");
+                api.deleteAccount({
                   name: user.name,
                 }).then((result) => {
-                  Popup.stopLoading();
-                  Api.getSpecialroomStudentInfo({}).then((result) => {
+                  popup.stopLoading();
+                  api.getSpecialroomStudentInfo({}).then((result) => {
                     setUsers(result.studentInfo);
-                  });
-                });
+                  }).catch(() => { /* Api already displayed the error. */ });
+                }).catch(() => { /* Api already displayed the error. */ });
               }
             }}
           />
@@ -49,12 +50,12 @@ function UserBox(props: UserBoxProps) {
 }
 
 export default function UserManagementScreen() {
-  const [users, setUsers] = useState<v1.UserInfo[]>([]);
+  const [users, setUsers] = useState<apiTypes.UserInfo[]>([]);
 
   useEffect(() => {
-    Api.getSpecialroomStudentInfo({}).then((result) => {
+    api.getSpecialroomStudentInfo({}).then((result) => {
       setUsers(result.studentInfo);
-    });
+    }).catch(() => { /* Api already displayed the error. */ });
   }, []);
 
   return (

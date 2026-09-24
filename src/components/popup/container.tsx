@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 
 import { closeAll, useDialogContainerStore } from "@/components/popup/hooks";
 import { DialogComponent } from "@/components/popup/dialog";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/use-auth";
 
 export function DialogContainer() {
   const { dialogs } = useDialogContainerStore();

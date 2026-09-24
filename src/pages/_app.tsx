@@ -1,20 +1,20 @@
 import { Outlet } from "react-router-dom";
 import { SnackbarProvider } from "notistack";
 
-import Popup from "@/components/popup";
-import Firebase from "@/components/firebase";
+import popup from "@/components/popup";
+import firebase from "@/components/firebase";
 import Particle from "@/components/particle";
 import Theme from "@/components/theme";
 import Navbar from "@/components/navbar";
-import { useNavbar } from "@/hooks/useNavbar";
+import { useNavbar } from "@/hooks/use-navbar";
 
 export default function RootLayout() {
   const { noHeader, noFooter } = useNavbar();
 
   return (
     <>
-      <Popup.DialogContainer />
-      <Popup.LoadingComponent />
+      <popup.DialogContainer />
+      <popup.LoadingComponent />
       <SnackbarProvider
         maxSnack={5}
         autoHideDuration={6000}
@@ -23,8 +23,8 @@ export default function RootLayout() {
           horizontal: "right",
         }}
       >
-        <Firebase.FirebaseComponent />
-        <Firebase.TrackerComponent />
+        <firebase.FirebaseComponent />
+        <firebase.TrackerComponent />
         <Particle.ParticleComponent />
         <Theme.AddonComponent type={Theme.getThemeType()} />
         {!noHeader && <Navbar.HeaderComponent />}

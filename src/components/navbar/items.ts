@@ -1,4 +1,4 @@
-import { Permission } from "@common-jshs/menkakusitsu-lib";
+import { Permission } from "@/auth";
 
 export const headerItems = [
   {

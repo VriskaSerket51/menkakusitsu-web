@@ -1,4 +1,5 @@
-import { Permission, v1 } from "@common-jshs/menkakusitsu-lib";
+import { Permission } from "@/auth";
+import type * as apiTypes from "@/api/types";
 import {
   Box,
   CircularProgress,
@@ -21,16 +22,16 @@ import { CheckCircle, GroupAdd, HourglassTop } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 import { useCallback, useEffect, useState } from "react";
 
-import Popup from "@/components/popup";
-import { Api, Constants } from "@/utils";
+import popup from "@/components/popup";
+import { api, constants } from "@/utils";
 import { TitleText } from "@/components/basics";
-import { SubmitButton } from "@/components/basics/StyledButton";
-import { SpecialroomInfoPanel } from "@/components/panels/SpecialroomInfoPanel";
+import { SubmitButton } from "@/components/basics/styled-button";
+import { SpecialroomInfoPanel } from "@/components/panels/specialroom-info-panel";
 
 const steps = ["신청 완료", "승인 대기 중", "승인 완료"];
 
 export default function StatusScreen() {
-  const [applyStatus, setApplyStatus] = useState<v1.SpecialroomInfo | null>(
+  const [applyStatus, setApplyStatus] = useState<apiTypes.SpecialroomInfo | null>(
     null
   );
   const [isLoading, setIsLoading] = useState(true);
@@ -39,28 +40,27 @@ export default function StatusScreen() {
 
   const refresh = useCallback(() => {
     setIsLoading(true);
-    Api.getSpecialroomApply({ when: when }).then((result) => {
-      setApplyStatus(result.specialroomInfo);
-      setIsLoading(false);
-    });
+    api.getSpecialroomApply({ when: when }).then((result) => {
+      setApplyStatus(result?.specialroomInfo ?? null);
+    }).catch(() => { setApplyStatus(null); }).finally(() => setIsLoading(false));
   }, [when]);
 
   const onCancelApply = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    Popup.openYesNoDialog(
-      Constants.DialogTitle.Info,
+    popup.openYesNoDialog(
+      constants.DialogTitle.Info,
       "정말 특별실 신청을 취소하시겠습니까?",
       () => {
-        Popup.startLoading("특별실 신청을 취소 중입니다...");
-        Api.deleteSpecialroomApply({ when: when }).then((result) => {
-          Popup.stopLoading();
-          if (Api.isSuccessed(result)) {
+        popup.startLoading("특별실 신청을 취소 중입니다...");
+        api.deleteSpecialroomApply({ when: when }).then((result) => {
+          popup.stopLoading();
+          if (api.isSuccess(result)) {
             refresh();
           } else {
-            Popup.openConfirmDialog(Constants.DialogTitle.Info, result.message);
+            popup.openConfirmDialog(constants.DialogTitle.Info, result.message);
             refresh();
           }
-        });
+        }).catch(() => { /* Api already displayed the error. */ });
       }
     );
   };
@@ -189,13 +189,15 @@ export default function StatusScreen() {
                 {steps.map((label, index) => (
                   <Step key={label}>
                     <StepLabel
-                      StepIconComponent={ColorlibStepIcon}
-                      StepIconProps={
-                        {
+                      slots={{
+                        stepIcon: ColorlibStepIcon
+                      }}
+                      slotProps={{
+                        stepIcon: {
                           icon: index + 1,
                           isApproved: applyStatus ? applyStatus.state : 0,
                         } as ColorlibStepIconProps
-                      }
+                      }}
                     >
                       {label}
                     </StepLabel>
@@ -288,11 +290,11 @@ const ColorlibStepIconRoot = styled("div")<{
 });
 
 type ColorlibStepIconProps = StepIconProps & {
-  isApproved: number;
+  isApproved?: number;
 };
 
 function ColorlibStepIcon(props: ColorlibStepIconProps) {
-  const { active, completed, className, isApproved } = props;
+  const { active, completed, className, isApproved = 0 } = props;
 
   const icons: { [index: string]: React.ReactElement } = {
     1: <GroupAdd />,

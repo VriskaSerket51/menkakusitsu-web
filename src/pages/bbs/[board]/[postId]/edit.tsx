@@ -1,4 +1,5 @@
-import { Permission, v1 } from "@common-jshs/menkakusitsu-lib";
+import { Permission } from "@/auth";
+import type * as apiTypes from "@/api/types";
 import {
   Box,
   Button,
@@ -16,32 +17,32 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 
-import Popup from "@/components/popup";
-import { Api, Constants } from "@/utils";
+import popup from "@/components/popup";
+import { api, constants } from "@/utils";
 import { TitleText } from "@/components/basics";
-import { SubmitButton } from "@/components/basics/StyledButton";
+import { SubmitButton } from "@/components/basics/styled-button";
 import { useNavigate, useParams } from "@/router";
 
 export default function EditScreen() {
   const { board, postId } = useParams("/bbs/:board/:postId/edit");
   const navigate = useNavigate();
 
-  const [post, setPost] = useState<v1.BbsPost | null>(null);
+  const [post, setPost] = useState<apiTypes.BbsPost | null>(null);
   const [headers, setHeaders] = useState<string[]>([]);
 
   useEffect(() => {
-    Popup.startLoading("피드백을 불러오는 중입니다...");
-    Api.getBbsPost({ board: board, postId: Number(postId) }).then(
+    popup.startLoading("피드백을 불러오는 중입니다...");
+    api.getBbsPost({ board: board, postId: Number(postId) }).then(
       (response) => {
-        Popup.stopLoading();
-        if (Api.isSuccessed(response)) {
+        popup.stopLoading();
+        if (api.isSuccess(response)) {
           setPost(response.post);
-          Api.getBbsPostHeaders({ board: board }).then((result) => {
+          api.getBbsPostHeaders({ board: board }).then((result) => {
             setHeaders(result.headers);
-          });
+          }).catch(() => { /* Api already displayed the error. */ });
         } else {
-          Popup.openConfirmDialog(
-            Constants.DialogTitle.Alert,
+          popup.openConfirmDialog(
+            constants.DialogTitle.Alert,
             response.message,
             () => {
               navigate("/bbs/:board/list", { params: { board: board } });
@@ -49,10 +50,10 @@ export default function EditScreen() {
           );
         }
       }
-    );
+    ).catch(() => { /* Api already displayed the error. */ });
   }, [board, navigate, postId]);
 
-  const onPostBbsPost = (e: React.MouseEvent<HTMLFormElement>) => {
+  const onPostBbsPost = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
     const title = data.get("title")?.toString();
@@ -62,8 +63,8 @@ export default function EditScreen() {
     if (!title || !content || !header) {
       return;
     }
-    Popup.startLoading("수정 중입니다...");
-    Api.putBbsPost({
+    popup.startLoading("수정 중입니다...");
+    api.putBbsPost({
       postId: Number(postId),
       board: board,
       title: title,
@@ -71,10 +72,10 @@ export default function EditScreen() {
       header: header,
       isPublic: isPublic,
     }).then((result) => {
-      if (Api.isSuccessed(result)) {
-        Popup.stopLoading();
-        Popup.openConfirmDialog(
-          Constants.DialogTitle.Info,
+      if (api.isSuccess(result)) {
+        popup.stopLoading();
+        popup.openConfirmDialog(
+          constants.DialogTitle.Info,
           "피드백 수정이 완료되었습니다.",
           () => {
             navigate("/bbs/:board/:postId/view", {
@@ -83,10 +84,10 @@ export default function EditScreen() {
           }
         );
       } else {
-        Popup.stopLoading();
-        Popup.openConfirmDialog(Constants.DialogTitle.Info, result.message);
+        popup.stopLoading();
+        popup.openConfirmDialog(constants.DialogTitle.Info, result.message);
       }
-    });
+    }).catch(() => { /* Api already displayed the error. */ });
   };
 
   return (
@@ -117,11 +118,12 @@ export default function EditScreen() {
                 <Grid
                   container
                   spacing={2}
-                  display="flex"
-                  alignItems="center"
-                  flexWrap="wrap"
-                >
-                  <Grid item xs={10}>
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    flexWrap: "wrap"
+                  }}>
+                  <Grid size={10}>
                     <TextField
                       size="small"
                       label="제목"
@@ -129,10 +131,12 @@ export default function EditScreen() {
                       fullWidth
                       required
                       defaultValue={post.title}
-                      inputProps={{ maxLength: 30 }}
+                      slotProps={{
+                        htmlInput: { maxLength: 30 }
+                      }}
                     />
                   </Grid>
-                  <Grid item xs={2}>
+                  <Grid size={2}>
                     <FormControl size="small" fullWidth>
                       <InputLabel id="title-header-label">말머리</InputLabel>
                       <Select
@@ -162,7 +166,9 @@ export default function EditScreen() {
                   rows={20}
                   required
                   defaultValue={post.content}
-                  inputProps={{ maxLength: 500 }}
+                  slotProps={{
+                    htmlInput: { maxLength: 500 }
+                  }}
                 />
                 <FormGroup>
                   <FormControlLabel

@@ -1,4 +1,5 @@
-import { Permission, v1 } from "@common-jshs/menkakusitsu-lib";
+import { Permission } from "@/auth";
+import type * as apiTypes from "@/api/types";
 import {
   Box,
   Button,
@@ -16,32 +17,32 @@ import { Article as ArticleIcon, Campaign, Lock } from "@mui/icons-material";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "@/router";
 
-import { Api, Constants, Utility } from "@/utils";
+import { api, constants, utilities } from "@/utils";
 import { Text, TitleText } from "@/components/basics";
-import { useColorScheme } from "@/hooks/useColorScheme";
-import Spinner from "@/components/basics/Spinner";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import Spinner from "@/components/basics/spinner";
 
 export default function ListScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [postCount, setPostCount] = useState(0);
-  const [postList, setPostList] = useState<v1.BbsPost[]>([]);
+  const [postList, setPostList] = useState<apiTypes.BbsPost[]>([]);
 
   const { board, postId } = useParams("/bbs/:board/:postId/view");
   const navigate = useNavigate();
 
-  const page = Number(Utility.getParameter("page", "1"));
+  const page = Number(utilities.getParameter("page", "1"));
 
   const refresh = useCallback(() => {
     setIsLoading(true);
-    Api.getBbsPostList({
+    api.getBbsPostList({
       board: board,
       postPage: page,
-      postListSize: Constants.POST_LIST_SIZE,
+      postListSize: constants.POST_LIST_SIZE,
     }).then((result) => {
       setIsLoading(false);
       setPostCount(result.postCount);
       setPostList(result.list);
-    });
+    }).catch(() => { setIsLoading(false); });
   }, [page, board]);
 
   useEffect(() => {
@@ -69,7 +70,9 @@ export default function ListScreen() {
             <TitleText color="secondary" variant="h2">
               피드백
             </TitleText>
-            <Stack spacing={2} width="100%">
+            <Stack spacing={2} sx={{
+              width: "100%"
+            }}>
               {isLoading && <Spinner text="피드백을 불러오는 중입니다..." />}
               {!isLoading &&
                 ((postList.length > 0 &&
@@ -104,7 +107,7 @@ export default function ListScreen() {
               </Button>
             </Box>
             <Pagination
-              count={Math.ceil(postCount / Constants.POST_LIST_SIZE)}
+              count={Math.ceil(postCount / constants.POST_LIST_SIZE)}
               page={page}
               onChange={(event: React.ChangeEvent<unknown>, value: number) => {
                 if (postId) {
@@ -139,7 +142,7 @@ export default function ListScreen() {
 }
 
 type ArticleProps = {
-  post: v1.BbsPost;
+  post: apiTypes.BbsPost;
   isNotice?: boolean;
   isHighlighted?: boolean;
   page: number;
@@ -171,7 +174,7 @@ function Article(props: ArticleProps) {
       }}
     >
       <Grid container spacing={3}>
-        <Grid item xs={8.5}>
+        <Grid size={8.5}>
           <Box
             sx={{
               width: "100%",
@@ -193,7 +196,7 @@ function Article(props: ArticleProps) {
             </Text>
           </Box>
         </Grid>
-        <Grid item xs={3.5}>
+        <Grid size={3.5}>
           <Box
             sx={{
               width: "100%",

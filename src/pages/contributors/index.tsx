@@ -1,13 +1,13 @@
-import { Permission } from "@common-jshs/menkakusitsu-lib";
+import { Permission } from "@/auth";
 import { Box, Container, Paper, Stack } from "@mui/material";
 import { GitHub } from "@mui/icons-material";
 import { useEffect } from "react";
 
 import { contributors } from "@/pages/contributors/members";
 import { IconLink, Text, TitleText } from "@/components/basics";
-import { setHeaderActive } from "@/hooks/useNavbar";
-import { useAuth } from "@/hooks/useAuth";
-import Logo from "@/components/basics/Logo";
+import { setHeaderActive } from "@/hooks/use-navbar";
+import { useAuth } from "@/hooks/use-auth";
+import Logo from "@/components/basics/logo";
 
 export default function ContributorsScreen() {
   const { payload } = useAuth();
@@ -55,7 +55,12 @@ export default function ContributorsScreen() {
             <TitleText color="secondary" variant="h2">
               만든 사람들
             </TitleText>
-            <Stack spacing={2} alignItems="flex-start" sx={{ width: "100%" }}>
+            <Stack
+              spacing={2}
+              sx={{
+                alignItems: "flex-start",
+                width: "100%"
+              }}>
               {contributors.map((contributor) => {
                 return (
                   <Box

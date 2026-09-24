@@ -5,7 +5,7 @@ import {
   Message,
   MessageContent,
   OnActionChanged,
-  OnActionResponsed,
+  OnActionResponse,
   OnMessagesChanged,
 } from './chat-types';
 
@@ -21,7 +21,7 @@ interface ChatState {
 interface Action {
   request: ActionRequest;
   responses: ActionResponse[];
-  onResnponsed: OnActionResponsed[];
+  responseHandlers: OnActionResponse[];
 }
 
 export class ChatController {
@@ -34,7 +34,7 @@ export class ChatController {
   private emptyAction: Action = {
     request: { type: 'empty' },
     responses: [],
-    onResnponsed: [],
+    responseHandlers: [],
   };
 
   private defaultActionRequest = {
@@ -112,12 +112,12 @@ export class ChatController {
 
   setActionRequest<T extends ActionRequest>(
     request: T,
-    onResponse?: OnActionResponsed,
+    onResponse?: OnActionResponse,
   ): Promise<ActionResponse> {
     const action: Action = {
       request: { ...this.defaultActionRequest, ...request },
       responses: [],
-      onResnponsed: [],
+      responseHandlers: [],
     };
 
     // See setActionResponse method
@@ -130,11 +130,11 @@ export class ChatController {
             reject(response.error);
           }
         };
-        action.onResnponsed.push(returnResponse);
+        action.responseHandlers.push(returnResponse);
       }
 
       if (onResponse) {
-        action.onResnponsed.push(onResponse);
+        action.responseHandlers.push(onResponse);
       }
 
       this.state.action = action;
@@ -165,12 +165,12 @@ export class ChatController {
     request: ActionRequest,
     response: ActionResponse,
   ): Promise<void> {
-    const { request: origReq, responses, onResnponsed } = this.state.action;
+    const { request: origReq, responses, responseHandlers } = this.state.action;
     if (request !== origReq) {
       throw new Error('Invalid action.');
     }
-    if (!request.always && onResnponsed.length === 0) {
-      throw new Error('onResponsed is not set.');
+    if (!request.always && responseHandlers.length === 0) {
+      throw new Error('Response handlers are not set.');
     }
 
     responses.push(response);
@@ -184,7 +184,7 @@ export class ChatController {
       });
     }
 
-    onResnponsed.map((h) => h(response));
+    responseHandlers.map((h) => h(response));
   }
 
   getActionResponses(): ActionResponse[] {

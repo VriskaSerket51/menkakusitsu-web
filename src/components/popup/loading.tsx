@@ -1,6 +1,6 @@
 import { Backdrop } from "@mui/material";
 import { useLoadingStore } from "@/components/popup/hooks";
-import Spinner from "@/components/basics/Spinner";
+import Spinner from "@/components/basics/spinner";
 
 export function LoadingComponent() {
   const { isLoading, text } = useLoadingStore();

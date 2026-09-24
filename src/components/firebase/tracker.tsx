@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
-import { logPageView } from "@/utils/Firebase";
+import { logPageView } from "@/utils/firebase";
 
 export function TrackerComponent() {
   const location = useLocation();

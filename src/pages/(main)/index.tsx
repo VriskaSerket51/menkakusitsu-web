@@ -1,15 +1,15 @@
-import { Permission } from "@common-jshs/menkakusitsu-lib";
+import { Permission } from "@/auth";
 import { Box, Button, Container, Grid } from "@mui/material";
 import { useEffect } from "react";
 
-import Popup from "@/components/popup";
-import { SpecialroomInfoPanel } from "@/components/panels/SpecialroomInfoPanel";
-import MealInfo from "@/components/panels/MealInfo";
-import LoginPanel from "@/components/panels/LoginPanel";
+import popup from "@/components/popup";
+import { SpecialroomInfoPanel } from "@/components/panels/specialroom-info-panel";
+import MealInfo from "@/components/panels/meal-info";
+import LoginPanel from "@/components/panels/login-panel";
 import { TitleText } from "@/components/basics";
-import Logo from "@/components/basics/Logo";
-import { useAuth } from "@/hooks/useAuth";
-import { setHeaderActive } from "@/hooks/useNavbar";
+import Logo from "@/components/basics/logo";
+import { useAuth } from "@/hooks/use-auth";
+import { setHeaderActive } from "@/hooks/use-navbar";
 
 export default function MainScreen() {
   const { payload } = useAuth();
@@ -57,10 +57,10 @@ function Guest() {
         }}
       >
         <Grid container spacing={3}>
-          <Grid item xs={8.5}>
+          <Grid size={8.5}>
             <SpecialroomInfoPanel />
           </Grid>
-          <Grid item xs={3.5}>
+          <Grid size={3.5}>
             <Button
               color="primary"
               sx={{
@@ -73,7 +73,7 @@ function Guest() {
               }}
               variant="contained"
               onClick={() => {
-                Popup.openCancelableDialog("", <LoginPanel />);
+                popup.openCancelableDialog("", <LoginPanel />);
               }}
             >
               <TitleText variant="body2">
@@ -81,7 +81,7 @@ function Guest() {
               </TitleText>
             </Button>
           </Grid>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <MealInfo />
           </Grid>
         </Grid>

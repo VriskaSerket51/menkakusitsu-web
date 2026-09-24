@@ -1,3 +1,5 @@
+import { ParticlesProvider } from "@tsparticles/react";
+import { loadFull } from "tsparticles";
 import { getThemeType, ThemeType } from "@/components/theme";
 import { LeafParticle } from "@/components/particle/leaf";
 import { SakuraParticle } from "@/components/particle/sakura";
@@ -22,5 +24,9 @@ export function ParticleComponent() {
   const { showParticle } = useParticleManagerStore();
   const type = getThemeType();
 
-  return showParticle ? getParticle(type) : <></>;
+  return (
+    <ParticlesProvider init={loadFull}>
+      {showParticle ? getParticle(type) : null}
+    </ParticlesProvider>
+  );
 }

@@ -2,6 +2,18 @@
 
 제주과학고 학교생활 서비스의 웹 프론트엔드입니다.
 
+## 로그인 API 코드 생성
+
+Node.js 22.18 이상에서 `npm ci`로 설치합니다. 로그인 요청/응답 타입과 호출 함수는
+OpenAPI 문서에서 Orval로 생성합니다. [개발 흐름과 검증 방법](docs/openapi.md)을 참고하세요.
+
+```sh
+npm run generate:api -- --source ../menkakusitsu-api/openapi.json
+npm run check:api
+npm test
+npm run build
+```
+
 ## 개발 방법
 
 1. [VSCode](https://code.visualstudio.com/download), [git](https://git-scm.com/downloads), [Node.js](https://nodejs.org/ko/) 설치
@@ -17,3 +29,5 @@
 ## LICENSE
 
 Calculator Simulator by [Numworks](https://www.numworks.com/simulator/)
+
+API 타입은 전체 OpenAPI 명세에서 생성하며 menkakusitsu-lib는 사용하지 않습니다. 자세한 흐름은 [OpenAPI 문서](docs/openapi.md)를 참고하세요.

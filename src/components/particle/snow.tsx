@@ -1,22 +1,7 @@
-import Particles, { initParticlesEngine } from "@tsparticles/react";
-import { loadBasic } from "@tsparticles/basic";
-import { loadWobbleUpdater } from "@tsparticles/updater-wobble";
-import { useEffect, useState } from "react";
+import Particles from "@tsparticles/react";
 
 export function SnowParticle() {
-  const [init, setInit] = useState(false);
-
-  useEffect(() => {
-    initParticlesEngine(async (engine) => {
-      await loadBasic(engine, false);
-      await loadWobbleUpdater(engine, false);
-    }).then(() => {
-      setInit(true);
-    });
-  }, []);
-
   return (
-    init && (
       <Particles
         options={{
           particles: {
@@ -46,6 +31,5 @@ export function SnowParticle() {
           },
         }}
       />
-    )
   );
 }

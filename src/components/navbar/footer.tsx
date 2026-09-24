@@ -2,12 +2,17 @@ import { Container, Divider, Stack } from "@mui/material";
 import { School, Policy, GitHub, PeopleAlt } from "@mui/icons-material";
 
 import { IconLink, IconNavLink } from "@/components/basics";
-import { InstagramLogo } from "@/components/images/Instagram";
+import { InstagramLogo } from "@/components/images/instagram";
 
 export function FooterComponent() {
   return (
     <Container maxWidth="xl" sx={{ marginBottom: "32px" }}>
-      <Stack spacing={2} alignItems="center" justifyContent="center">
+      <Stack
+        spacing={2}
+        sx={{
+          alignItems: "center",
+          justifyContent: "center"
+        }}>
         <Divider variant="middle" flexItem />
         <Stack
           direction="row"

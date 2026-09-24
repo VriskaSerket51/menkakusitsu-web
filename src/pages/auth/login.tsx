@@ -1,9 +1,9 @@
-import { Permission } from "@common-jshs/menkakusitsu-lib";
+import { Permission } from "@/auth";
 import { useEffect } from "react";
 import { Container, Paper } from "@mui/material";
 
-import LoginPanel from "@/components/panels/LoginPanel";
-import { setFooterActive, setHeaderActive } from "@/hooks/useNavbar";
+import LoginPanel from "@/components/panels/login-panel";
+import { setFooterActive, setHeaderActive } from "@/hooks/use-navbar";
 
 export default function LoginScreen() {
   useEffect(() => {

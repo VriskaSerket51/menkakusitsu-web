@@ -1,4 +1,4 @@
-import { Permission } from "@common-jshs/menkakusitsu-lib";
+import { Permission } from "@/auth";
 import {
   Box,
   Container,
@@ -8,8 +8,8 @@ import {
   Paper,
 } from "@mui/material";
 
-import { Utility } from "@/utils/";
-import { SubmitButton } from "@/components/basics/StyledButton";
+import { utilities } from "@/utils/";
+import { SubmitButton } from "@/components/basics/styled-button";
 import { TitleText } from "@/components/basics";
 
 const info = [
@@ -57,7 +57,7 @@ export default function InfoScreen() {
               backgroundColor="primary.main"
               width="192px"
               onClick={() => {
-                Utility.openInNewTab("./download?when=1");
+                utilities.openInNewTab("./download?when=1");
               }}
               textProps={{ variant: "body2" }}
             >
@@ -68,7 +68,7 @@ export default function InfoScreen() {
               backgroundColor="primary.main"
               width="192px"
               onClick={() => {
-                Utility.openInNewTab("./download?when=2");
+                utilities.openInNewTab("./download?when=2");
               }}
               textProps={{ variant: "body2" }}
             >

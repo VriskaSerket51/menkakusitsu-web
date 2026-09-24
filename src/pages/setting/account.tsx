@@ -1,10 +1,10 @@
-import { Permission } from "@common-jshs/menkakusitsu-lib";
+import { Permission } from "@/auth";
 import { Box, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 
-import Popup from "@/components/popup";
-import { Api, Utility, Constants } from "@/utils";
-import { SubmitButton } from "@/components/basics/StyledButton";
+import popup from "@/components/popup";
+import { api, utilities, constants } from "@/utils";
+import { SubmitButton } from "@/components/basics/styled-button";
 import { Text } from "@/components/basics";
 
 export default function AccountTab() {
@@ -21,9 +21,9 @@ function ChangeEmail() {
   const [errorText, setErrorText] = useState<string | null>(null);
 
   useEffect(() => {
-    Api.getMyPrivateInfo({}).then((result) => {
+    api.getMyPrivateInfo({}).then((result) => {
       setEmail(result.private.email!);
-    });
+    }).catch(() => { /* Api already displayed the error. */ });
   }, []);
 
   return (
@@ -41,24 +41,24 @@ function ChangeEmail() {
           setErrorText("이건 당신이 이미 쓰고 계시는 이메일입니다.");
           return;
         }
-        if (!Utility.validateEmail(newEmail)) {
+        if (!utilities.validateEmail(newEmail)) {
           setErrorText("유효하지 않은 이메일입니다!");
           return;
         }
-        Popup.startLoading("잠시만 기다려주세요...");
-        Api.putMyEmail({ oldEmail: email, newEmail: newEmail }).then(
+        popup.startLoading("잠시만 기다려주세요...");
+        api.putMyEmail({ oldEmail: email, newEmail: newEmail }).then(
           (result) => {
-            Popup.stopLoading();
-            if (Api.isSuccessed(result)) {
+            popup.stopLoading();
+            if (api.isSuccess(result)) {
               setEmail(result.newEmail);
             } else {
-              Popup.openConfirmDialog(
-                Constants.DialogTitle.Info,
+              popup.openConfirmDialog(
+                constants.DialogTitle.Info,
                 result.message
               );
             }
           }
-        );
+        ).catch(() => { /* Api already displayed the error. */ });
       }}
     >
       <Box
@@ -119,18 +119,18 @@ function ChangePassword() {
           setErrorText("비밀번호와 비밀번호 확인이 다릅니다.");
           return;
         }
-        Popup.startLoading("잠시만 기다려주세요...");
-        Api.putMyPassword({
-          oldPassword: Utility.Sha3(oldPassword),
-          newPassword: Utility.Sha3(newPassword),
+        popup.startLoading("잠시만 기다려주세요...");
+        api.putMyPassword({
+          oldPassword: utilities.hashSha3(oldPassword),
+          newPassword: utilities.hashSha3(newPassword),
         }).then((result) => {
-          Popup.stopLoading();
-          if (Api.isSuccessed(result)) {
+          popup.stopLoading();
+          if (api.isSuccess(result)) {
             window.location.reload();
           } else {
-            Popup.openConfirmDialog(Constants.DialogTitle.Info, result.message);
+            popup.openConfirmDialog(constants.DialogTitle.Info, result.message);
           }
-        });
+        }).catch(() => { /* Api already displayed the error. */ });
       }}
     >
       <Box

@@ -1,0 +1,5031 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Menkakusitsu API",
+    "version": "1.0.0",
+    "description": "All registered REST operations. Request schemas describe canonical parsed values; numeric and true/false strings are also accepted where the runtime schemas coerce them. Failures use HTTP 4xx/5xx and an HttpError body."
+  },
+  "tags": [
+    {
+      "name": "auth"
+    },
+    {
+      "name": "bbs"
+    },
+    {
+      "name": "files"
+    },
+    {
+      "name": "chat"
+    },
+    {
+      "name": "meal"
+    },
+    {
+      "name": "specialroom"
+    },
+    {
+      "name": "timetable"
+    },
+    {
+      "name": "user"
+    }
+  ],
+  "paths": {
+    "/v1/auth/account": {
+      "post": {
+        "operationId": "postRegister",
+        "tags": [
+          "auth"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostRegisterResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostRegisterRequest"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteAccount",
+        "tags": [
+          "auth"
+        ],
+        "description": "Students may delete themselves. Selecting another account requires Teacher permission.",
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteAccountResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-permission": 1,
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteAccountRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/login": {
+      "post": {
+        "operationId": "postLogin",
+        "tags": [
+          "auth"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/refresh": {
+      "post": {
+        "operationId": "postRefresh",
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "refreshToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostRefreshResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostRefreshRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/logout": {
+      "delete": {
+        "operationId": "deleteLogout",
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteLogoutResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteLogoutRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/reset/password": {
+      "put": {
+        "operationId": "putForgotPassword",
+        "tags": [
+          "auth"
+        ],
+        "description": "Not implemented: valid requests return HTTP 501 with code PASSWORD_RESET_UNAVAILABLE. No reset or email is performed.",
+        "security": [],
+        "responses": {
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Password reset is not implemented (PASSWORD_RESET_UNAVAILABLE)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutForgotPasswordRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/bbs/post/list": {
+      "get": {
+        "operationId": "getBbsPostList",
+        "tags": [
+          "bbs"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBbsPostListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "board",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "postPage",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "postListSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/bbs/post": {
+      "get": {
+        "operationId": "getBbsPost",
+        "tags": [
+          "bbs"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBbsPostResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "board",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "postId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "postBbsPost",
+        "tags": [
+          "bbs"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostBbsPostResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream service failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/BbsPostUploadRequest"
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "putBbsPost",
+        "tags": [
+          "bbs"
+        ],
+        "description": "Only the author or a developer may update the post.",
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PutBbsPostResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutBbsPostRequest"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteBbsPost",
+        "tags": [
+          "bbs"
+        ],
+        "description": "Only the author or a developer may delete the post.",
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteBbsPostResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteBbsPostRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/bbs/post/headers": {
+      "get": {
+        "operationId": "getBbsPostHeaders",
+        "tags": [
+          "bbs"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBbsPostHeadersResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "board",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/bbs/comment/list": {
+      "get": {
+        "operationId": "getBbsCommentList",
+        "tags": [
+          "bbs"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetBbsCommentListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "board",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "postId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "commentPage",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "commentListSize",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/bbs/comment": {
+      "post": {
+        "operationId": "postBbsComment",
+        "tags": [
+          "bbs"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostBbsCommentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostBbsCommentRequest"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteBbsComment",
+        "tags": [
+          "bbs"
+        ],
+        "description": "Only the comment author or a developer may delete it.",
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteBbsCommentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteBbsCommentRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/files/upload": {
+      "post": {
+        "operationId": "postUploadFile",
+        "tags": [
+          "files"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostUploadFileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream service failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/FileUploadRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/chat/idbot/message": {
+      "get": {
+        "operationId": "getIdbotMessage",
+        "tags": [
+          "chat"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetIdbotMessageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream service failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "chatInput",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/meal/now": {
+      "get": {
+        "operationId": "getMeal",
+        "tags": [
+          "meal"
+        ],
+        "description": "Cached external meal data: tomorrow's breakfast and today's lunch and dinner in Asia/Seoul. No date parameter.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMealResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream service failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/specialroom/apply": {
+      "get": {
+        "operationId": "getApply",
+        "tags": [
+          "specialroom"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetApplyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "when",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "postApply",
+        "tags": [
+          "specialroom"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostApplyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostApplyRequest"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteApply",
+        "tags": [
+          "specialroom"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteApplyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteApplyRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/specialroom/attendance/info": {
+      "get": {
+        "operationId": "getAttendanceInfo",
+        "tags": [
+          "specialroom"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetAttendanceInfoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/specialroom/attendance/list": {
+      "get": {
+        "operationId": "getAttendanceList",
+        "tags": [
+          "specialroom"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetAttendanceListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "when",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2
+            }
+          }
+        ]
+      }
+    },
+    "/v1/specialroom/info": {
+      "get": {
+        "operationId": "getSpecialroomInfo",
+        "tags": [
+          "specialroom"
+        ],
+        "description": "Anonymous requests receive masked names. If a token is supplied, it must be a valid access token.",
+        "security": [
+          {},
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSpecialroomInfoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "putSpecialroomInfo",
+        "tags": [
+          "specialroom"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PutSpecialroomInfoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-permission": 2,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutInfoRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/specialroom/info/manager/{when}": {
+      "get": {
+        "operationId": "getManagerInfo",
+        "tags": [
+          "specialroom"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetManagerInfoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "when",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/specialroom/info/location": {
+      "get": {
+        "operationId": "getLocationInfo",
+        "tags": [
+          "specialroom"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetLocationInfoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/specialroom/info/purpose": {
+      "get": {
+        "operationId": "getPurposeInfo",
+        "tags": [
+          "specialroom"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetPurposeInfoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/specialroom/info/student": {
+      "get": {
+        "operationId": "getStudentInfo",
+        "tags": [
+          "specialroom"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetStudentInfoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/specialroom/info/teacher": {
+      "get": {
+        "operationId": "getTeacherInfo",
+        "tags": [
+          "specialroom"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetTeacherInfoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/timetable/{when}": {
+      "get": {
+        "operationId": "getTimetable",
+        "tags": [
+          "timetable"
+        ],
+        "description": "Currently public; when is a YYYY-MM-DD date.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetTimetableResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "when",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+            }
+          }
+        ]
+      },
+      "put": {
+        "operationId": "putTimetable",
+        "tags": [
+          "timetable"
+        ],
+        "description": "Currently public. Path date takes precedence over the required body date.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PutTimetableResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutTimetableRequest"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "when",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/user/push": {
+      "post": {
+        "operationId": "postPush",
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostPushResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostPushRequest"
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "putPush",
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PutPushResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutPushRequest"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deletePush",
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletePushResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeletePushRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/user/me": {
+      "get": {
+        "operationId": "getMyPrivateInfo",
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMyPrivateInfoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/user/me/email": {
+      "put": {
+        "operationId": "putEmail",
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PutEmailResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutEmailRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/user/me/password": {
+      "put": {
+        "operationId": "putPassword",
+        "tags": [
+          "user"
+        ],
+        "description": "The success response returns the updated password digest as newPassword.",
+        "security": [
+          {
+            "accessToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PutPasswordResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PutPasswordRequest"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "accessToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Access token returned by login or refresh."
+      },
+      "refreshToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Refresh token in the Authorization header, not the request body."
+      }
+    },
+    "schemas": {
+      "TokenClaims": {
+        "type": "object",
+        "properties": {
+          "uid": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          },
+          "sid": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "Login session ID; not the student number"
+          },
+          "id": {
+            "type": "string"
+          },
+          "permission": {
+            "type": "number",
+            "description": "Permission threshold; see PermissionValues. Higher values include lower permissions."
+          },
+          "type": {
+            "type": "string"
+          },
+          "iat": {
+            "type": "number"
+          },
+          "exp": {
+            "type": "number"
+          },
+          "jti": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "uid",
+          "sid",
+          "id",
+          "permission",
+          "type",
+          "iat",
+          "exp",
+          "jti"
+        ],
+        "additionalProperties": false
+      },
+      "PermissionValues": {
+        "type": "object",
+        "properties": {
+          "Guest": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "Student": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "Teacher": {
+            "type": "number",
+            "enum": [
+              2
+            ]
+          },
+          "Dev": {
+            "type": "number",
+            "enum": [
+              100
+            ]
+          }
+        },
+        "required": [
+          "Guest",
+          "Student",
+          "Teacher",
+          "Dev"
+        ],
+        "additionalProperties": false
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "deviceName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "password": {
+            "type": "string",
+            "description": "Existing client-side SHA3 password digest"
+          }
+        },
+        "required": [
+          "id",
+          "password"
+        ]
+      },
+      "DeleteAccountRequest": {
+        "type": "object",
+        "properties": {
+          "uid": {
+            "type": "number"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "DeleteLogoutRequest": {
+        "default": {},
+        "type": "object",
+        "properties": {
+          "all": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PostRefreshRequest": {
+        "default": {},
+        "type": "object",
+        "properties": {}
+      },
+      "PostRegisterRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sid": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "sid",
+          "name",
+          "email",
+          "password"
+        ]
+      },
+      "PutForgotPasswordRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email"
+        ]
+      },
+      "DeleteBbsCommentRequest": {
+        "type": "object",
+        "properties": {
+          "board": {
+            "type": "string"
+          },
+          "postId": {
+            "type": "number"
+          },
+          "commentId": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "board",
+          "postId",
+          "commentId"
+        ]
+      },
+      "DeleteBbsPostRequest": {
+        "type": "object",
+        "properties": {
+          "board": {
+            "type": "string"
+          },
+          "postId": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "board",
+          "postId"
+        ]
+      },
+      "GetBbsCommentListRequest": {
+        "type": "object",
+        "properties": {
+          "board": {
+            "type": "string"
+          },
+          "postId": {
+            "type": "number"
+          },
+          "commentPage": {
+            "type": "number"
+          },
+          "commentListSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "board",
+          "postId",
+          "commentPage",
+          "commentListSize"
+        ]
+      },
+      "GetBbsPostHeaderRequest": {
+        "type": "object",
+        "properties": {
+          "board": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "board"
+        ]
+      },
+      "GetBbsPostListRequest": {
+        "type": "object",
+        "properties": {
+          "board": {
+            "type": "string"
+          },
+          "postPage": {
+            "type": "number"
+          },
+          "postListSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "board",
+          "postPage",
+          "postListSize"
+        ]
+      },
+      "GetBbsPostRequest": {
+        "type": "object",
+        "properties": {
+          "board": {
+            "type": "string"
+          },
+          "postId": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "board",
+          "postId"
+        ]
+      },
+      "PostBbsCommentRequest": {
+        "type": "object",
+        "properties": {
+          "board": {
+            "type": "string"
+          },
+          "postId": {
+            "type": "number"
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "board",
+          "postId",
+          "content"
+        ]
+      },
+      "PostBbsPostRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "header": {
+            "type": "string"
+          },
+          "board": {
+            "type": "string"
+          },
+          "isPublic": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "title",
+          "content",
+          "header",
+          "board",
+          "isPublic"
+        ]
+      },
+      "PutBbsPostRequest": {
+        "type": "object",
+        "properties": {
+          "board": {
+            "type": "string"
+          },
+          "postId": {
+            "type": "number"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "header": {
+            "type": "string"
+          },
+          "isPublic": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "board",
+          "postId"
+        ]
+      },
+      "GetIdbotChatRequest": {
+        "type": "object",
+        "properties": {
+          "chatInput": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "chatInput"
+        ]
+      },
+      "GetMealRequest": {
+        "type": "object",
+        "properties": {
+          "when": {
+            "type": "string"
+          }
+        }
+      },
+      "DeleteApplyRequest": {
+        "type": "object",
+        "properties": {
+          "when": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2
+          }
+        },
+        "required": [
+          "when"
+        ]
+      },
+      "GetApplyRequest": {
+        "type": "object",
+        "properties": {
+          "when": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2
+          }
+        },
+        "required": [
+          "when"
+        ]
+      },
+      "GetAttendanceInfoRequest": {
+        "default": {},
+        "type": "object",
+        "properties": {}
+      },
+      "GetAttendanceListRequest": {
+        "type": "object",
+        "properties": {
+          "when": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2
+          }
+        },
+        "required": [
+          "when"
+        ]
+      },
+      "GetInfoRequest": {
+        "default": {},
+        "type": "object",
+        "properties": {}
+      },
+      "GetLocationInfoRequest": {
+        "default": {},
+        "type": "object",
+        "properties": {}
+      },
+      "GetManagerRequest": {
+        "type": "object",
+        "properties": {
+          "when": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          }
+        },
+        "required": [
+          "when"
+        ]
+      },
+      "GetPurposeInfoRequest": {
+        "default": {},
+        "type": "object",
+        "properties": {}
+      },
+      "GetStudentInfoRequest": {
+        "default": {},
+        "type": "object",
+        "properties": {}
+      },
+      "GetTeacherInfoRequest": {
+        "default": {},
+        "type": "object",
+        "properties": {}
+      },
+      "PostApplyRequest": {
+        "type": "object",
+        "properties": {
+          "teacherUid": {
+            "type": "number"
+          },
+          "applicants": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "uid": {
+                  "type": "number"
+                },
+                "value": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "uid",
+                "value",
+                "name"
+              ]
+            }
+          },
+          "location": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "when": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2
+          }
+        },
+        "required": [
+          "teacherUid",
+          "applicants",
+          "location",
+          "purpose",
+          "when"
+        ]
+      },
+      "PutInfoRequest": {
+        "type": "object",
+        "properties": {
+          "information": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "applyId": {
+                  "type": "number"
+                },
+                "state": {
+                  "type": "number"
+                },
+                "master": {
+                  "type": "object",
+                  "properties": {
+                    "uid": {
+                      "type": "number"
+                    },
+                    "value": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "uid",
+                    "value",
+                    "name"
+                  ]
+                },
+                "teacher": {
+                  "type": "object",
+                  "properties": {
+                    "uid": {
+                      "type": "number"
+                    },
+                    "value": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "uid",
+                    "value",
+                    "name"
+                  ]
+                },
+                "applicants": {
+                  "type": "string"
+                },
+                "location": {
+                  "type": "string"
+                },
+                "purpose": {
+                  "type": "string"
+                },
+                "when": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "applyId",
+                "state",
+                "master",
+                "teacher",
+                "applicants",
+                "location",
+                "purpose",
+                "when"
+              ]
+            }
+          }
+        },
+        "required": [
+          "information"
+        ]
+      },
+      "GetTimetableRequest": {
+        "type": "object",
+        "properties": {
+          "when": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          }
+        },
+        "required": [
+          "when"
+        ]
+      },
+      "PutTimetableRequest": {
+        "type": "object",
+        "properties": {
+          "when": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "timetableInfo": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "value"
+              ]
+            }
+          }
+        },
+        "required": [
+          "when",
+          "timetableInfo"
+        ]
+      },
+      "DeletePushRequest": {
+        "type": "object",
+        "properties": {
+          "deviceId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "deviceId"
+        ]
+      },
+      "GetMyPrivateInfoRequest": {
+        "default": {},
+        "type": "object",
+        "properties": {}
+      },
+      "PostPushRequest": {
+        "type": "object",
+        "properties": {
+          "targetUid": {
+            "type": "number"
+          },
+          "notification": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "body": {
+                "type": "string"
+              },
+              "link": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "title",
+              "body"
+            ]
+          }
+        },
+        "required": [
+          "targetUid",
+          "notification"
+        ]
+      },
+      "PutEmailRequest": {
+        "type": "object",
+        "properties": {
+          "oldEmail": {
+            "type": "string"
+          },
+          "newEmail": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "oldEmail",
+          "newEmail"
+        ]
+      },
+      "PutPasswordRequest": {
+        "type": "object",
+        "properties": {
+          "oldPassword": {
+            "type": "string"
+          },
+          "newPassword": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "oldPassword",
+          "newPassword"
+        ]
+      },
+      "PutPushRequest": {
+        "type": "object",
+        "properties": {
+          "pushToken": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "pushToken",
+          "deviceId"
+        ]
+      },
+      "LoginSuccess": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          },
+          "callbacks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "accessToken",
+          "refreshToken",
+          "callbacks"
+        ],
+        "additionalProperties": false
+      },
+      "HttpError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ],
+            "additionalProperties": false
+          },
+          "requestId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error",
+          "requestId"
+        ],
+        "additionalProperties": false
+      },
+      "Success": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "RefreshSuccess": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "accessToken",
+          "refreshToken"
+        ],
+        "additionalProperties": false
+      },
+      "BbsPostListSuccess": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "postCount": {
+            "type": "number"
+          },
+          "list": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number"
+                },
+                "owner": {
+                  "type": "object",
+                  "properties": {
+                    "uid": {
+                      "type": "number"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "uid",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "title": {
+                  "type": "string"
+                },
+                "content": {
+                  "type": "string"
+                },
+                "header": {
+                  "type": "string"
+                },
+                "board": {
+                  "type": "string"
+                },
+                "postType": {
+                  "type": "number"
+                },
+                "commentCount": {
+                  "type": "number"
+                },
+                "createdDate": {
+                  "type": "string"
+                },
+                "isPublic": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "owner",
+                "title",
+                "content",
+                "header",
+                "board",
+                "postType",
+                "commentCount",
+                "createdDate",
+                "isPublic"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "postCount",
+          "list"
+        ],
+        "additionalProperties": false
+      },
+      "BbsPostSuccess": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "post": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              },
+              "owner": {
+                "type": "object",
+                "properties": {
+                  "uid": {
+                    "type": "number"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "uid",
+                  "name"
+                ],
+                "additionalProperties": false
+              },
+              "title": {
+                "type": "string"
+              },
+              "content": {
+                "type": "string"
+              },
+              "header": {
+                "type": "string"
+              },
+              "board": {
+                "type": "string"
+              },
+              "postType": {
+                "type": "number"
+              },
+              "commentCount": {
+                "type": "number"
+              },
+              "createdDate": {
+                "type": "string"
+              },
+              "isPublic": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "owner",
+              "title",
+              "content",
+              "header",
+              "board",
+              "postType",
+              "commentCount",
+              "createdDate",
+              "isPublic"
+            ],
+            "additionalProperties": false
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "fileName": {
+                  "type": "string"
+                },
+                "downloadLink": {
+                  "type": "string"
+                },
+                "mimeType": {
+                  "type": "string"
+                },
+                "owner": {
+                  "type": "object",
+                  "properties": {
+                    "uid": {
+                      "type": "number"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "uid",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "fileName",
+                "downloadLink",
+                "mimeType",
+                "owner"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "post",
+          "attachments"
+        ],
+        "additionalProperties": false
+      },
+      "BbsPostCreated": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "postId": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "postId"
+        ],
+        "additionalProperties": false
+      },
+      "BbsHeadersSuccess": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "headers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "headers"
+        ],
+        "additionalProperties": false
+      },
+      "BbsCommentListSuccess": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "commentCount": {
+            "type": "number"
+          },
+          "list": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number"
+                },
+                "owner": {
+                  "type": "object",
+                  "properties": {
+                    "uid": {
+                      "type": "number"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "uid",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "content": {
+                  "type": "string"
+                },
+                "createdDate": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "owner",
+                "content",
+                "createdDate"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "commentCount",
+          "list"
+        ],
+        "additionalProperties": false
+      },
+      "BbsCommentCreated": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "commentId": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "commentId"
+        ],
+        "additionalProperties": false
+      },
+      "FileUploadSuccess": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "endpoint": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "endpoint"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "files"
+        ],
+        "additionalProperties": false
+      },
+      "IdbotSuccess": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "chatOutput": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "chatOutput"
+        ],
+        "additionalProperties": false
+      },
+      "MealSuccess": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "breakfast": {
+            "type": "object",
+            "properties": {
+              "meals": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "meals"
+            ],
+            "additionalProperties": false
+          },
+          "lunch": {
+            "type": "object",
+            "properties": {
+              "meals": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "meals"
+            ],
+            "additionalProperties": false
+          },
+          "dinner": {
+            "type": "object",
+            "properties": {
+              "meals": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "meals"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "breakfast",
+          "lunch",
+          "dinner"
+        ],
+        "additionalProperties": false
+      },
+      "SpecialroomApplySuccess": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "specialroomInfo": {
+            "type": "object",
+            "properties": {
+              "applyId": {
+                "type": "number"
+              },
+              "displayNo": {
+                "type": "number"
+              },
+              "state": {
+                "type": "number"
+              },
+              "master": {
+                "type": "object",
+                "properties": {
+                  "uid": {
+                    "type": "number"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "uid",
+                  "name"
+                ],
+                "additionalProperties": false
+              },
+              "teacher": {
+                "type": "object",
+                "properties": {
+                  "uid": {
+                    "type": "number"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "uid",
+                  "name"
+                ],
+                "additionalProperties": false
+              },
+              "applicants": {
+                "type": "string"
+              },
+              "location": {
+                "type": "string"
+              },
+              "purpose": {
+                "type": "string"
+              },
+              "when": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "applyId",
+              "displayNo",
+              "state",
+              "master",
+              "teacher",
+              "applicants",
+              "location",
+              "purpose",
+              "when"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "specialroomInfo"
+        ],
+        "additionalProperties": false
+      },
+      "AttendanceInfoSuccess": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "info": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "info"
+        ],
+        "additionalProperties": false
+      },
+      "AttendanceListSuccess": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "list": {
+            "type": "object",
+            "properties": {
+              "big": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              },
+              "small": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "required": [
+              "big",
+              "small"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "list"
+        ],
+        "additionalProperties": false
+      },
+      "SpecialroomListSuccess": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "information": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "applyId": {
+                  "type": "number"
+                },
+                "displayNo": {
+                  "type": "number"
+                },
+                "state": {
+                  "type": "number"
+                },
+                "master": {
+                  "type": "object",
+                  "properties": {
+                    "uid": {
+                      "type": "number"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "uid",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "teacher": {
+                  "type": "object",
+                  "properties": {
+                    "uid": {
+                      "type": "number"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "uid",
+                    "name"
+                  ],
+                  "additionalProperties": false
+                },
+                "applicants": {
+                  "type": "string"
+                },
+                "location": {
+                  "type": "string"
+                },
+                "purpose": {
+                  "type": "string"
+                },
+                "when": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "applyId",
+                "displayNo",
+                "state",
+                "master",
+                "teacher",
+                "applicants",
+                "location",
+                "purpose",
+                "when"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "information"
+        ],
+        "additionalProperties": false
+      },
+      "ManagerSuccess": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "manager": {
+            "type": "object",
+            "properties": {
+              "uid": {
+                "type": "number"
+              },
+              "name": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "uid",
+              "name"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "manager"
+        ],
+        "additionalProperties": false
+      },
+      "LocationInfoSuccess": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "locationInfo": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "locationInfo"
+        ],
+        "additionalProperties": false
+      },
+      "PurposeInfoSuccess": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "purposeInfo": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "purposeInfo"
+        ],
+        "additionalProperties": false
+      },
+      "StudentInfoSuccess": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "studentInfo": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "uid": {
+                  "type": "number"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "uid",
+                "name"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "studentInfo"
+        ],
+        "additionalProperties": false
+      },
+      "TeacherInfoSuccess": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "teacherInfo": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "uid": {
+                  "type": "number"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "uid",
+                "name"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "teacherInfo"
+        ],
+        "additionalProperties": false
+      },
+      "TimetableSuccess": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "timetable": {
+            "type": "object",
+            "properties": {
+              "timetableInfo": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "key",
+                      "value"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            },
+            "required": [
+              "timetableInfo"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "timetable"
+        ],
+        "additionalProperties": false
+      },
+      "MyPrivateInfoSuccess": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "private": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "nullable": true,
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "private"
+        ],
+        "additionalProperties": false
+      },
+      "EmailUpdated": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "newEmail": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "newEmail"
+        ],
+        "additionalProperties": false
+      },
+      "PasswordUpdated": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "number",
+            "enum": [
+              0
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "Updated client-side password digest"
+          }
+        },
+        "required": [
+          "status",
+          "message",
+          "newPassword"
+        ],
+        "additionalProperties": false
+      },
+      "FileUploadRequest": {
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "binary"
+            },
+            "minItems": 1,
+            "description": "One or more files in repeated data fields; maximum 50 MiB per file."
+          }
+        }
+      },
+      "BbsPostUploadRequest": {
+        "type": "object",
+        "required": [
+          "props"
+        ],
+        "properties": {
+          "props": {
+            "type": "string",
+            "description": "JSON-encoded PostBbsPostRequest. Serialize the object with JSON.stringify before adding this form field.",
+            "x-json-schema": {
+              "$ref": "#/components/schemas/PostBbsPostRequest"
+            }
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "binary"
+            },
+            "minItems": 1,
+            "description": "One or more files in repeated data fields; maximum 50 MiB per file."
+          }
+        }
+      },
+      "PostRegisterResponse": {
+        "$ref": "#/components/schemas/Success"
+      },
+      "DeleteAccountResponse": {
+        "$ref": "#/components/schemas/Success"
+      },
+      "LoginResponse": {
+        "$ref": "#/components/schemas/LoginSuccess"
+      },
+      "PostRefreshResponse": {
+        "$ref": "#/components/schemas/RefreshSuccess"
+      },
+      "DeleteLogoutResponse": {
+        "$ref": "#/components/schemas/Success"
+      },
+      "GetBbsPostListResponse": {
+        "$ref": "#/components/schemas/BbsPostListSuccess"
+      },
+      "GetBbsPostResponse": {
+        "$ref": "#/components/schemas/BbsPostSuccess"
+      },
+      "PostBbsPostResponse": {
+        "$ref": "#/components/schemas/BbsPostCreated"
+      },
+      "PutBbsPostResponse": {
+        "$ref": "#/components/schemas/Success"
+      },
+      "DeleteBbsPostResponse": {
+        "$ref": "#/components/schemas/Success"
+      },
+      "GetBbsPostHeadersResponse": {
+        "$ref": "#/components/schemas/BbsHeadersSuccess"
+      },
+      "GetBbsCommentListResponse": {
+        "$ref": "#/components/schemas/BbsCommentListSuccess"
+      },
+      "PostBbsCommentResponse": {
+        "$ref": "#/components/schemas/BbsCommentCreated"
+      },
+      "DeleteBbsCommentResponse": {
+        "$ref": "#/components/schemas/Success"
+      },
+      "PostUploadFileResponse": {
+        "$ref": "#/components/schemas/FileUploadSuccess"
+      },
+      "GetIdbotMessageResponse": {
+        "$ref": "#/components/schemas/IdbotSuccess"
+      },
+      "GetMealResponse": {
+        "$ref": "#/components/schemas/MealSuccess"
+      },
+      "GetApplyResponse": {
+        "$ref": "#/components/schemas/SpecialroomApplySuccess"
+      },
+      "PostApplyResponse": {
+        "$ref": "#/components/schemas/Success"
+      },
+      "DeleteApplyResponse": {
+        "$ref": "#/components/schemas/Success"
+      },
+      "GetAttendanceInfoResponse": {
+        "$ref": "#/components/schemas/AttendanceInfoSuccess"
+      },
+      "GetAttendanceListResponse": {
+        "$ref": "#/components/schemas/AttendanceListSuccess"
+      },
+      "GetSpecialroomInfoResponse": {
+        "$ref": "#/components/schemas/SpecialroomListSuccess"
+      },
+      "PutSpecialroomInfoResponse": {
+        "$ref": "#/components/schemas/SpecialroomListSuccess"
+      },
+      "GetManagerInfoResponse": {
+        "$ref": "#/components/schemas/ManagerSuccess"
+      },
+      "GetLocationInfoResponse": {
+        "$ref": "#/components/schemas/LocationInfoSuccess"
+      },
+      "GetPurposeInfoResponse": {
+        "$ref": "#/components/schemas/PurposeInfoSuccess"
+      },
+      "GetStudentInfoResponse": {
+        "$ref": "#/components/schemas/StudentInfoSuccess"
+      },
+      "GetTeacherInfoResponse": {
+        "$ref": "#/components/schemas/TeacherInfoSuccess"
+      },
+      "GetTimetableResponse": {
+        "$ref": "#/components/schemas/TimetableSuccess"
+      },
+      "PutTimetableResponse": {
+        "$ref": "#/components/schemas/TimetableSuccess"
+      },
+      "PostPushResponse": {
+        "$ref": "#/components/schemas/Success"
+      },
+      "PutPushResponse": {
+        "$ref": "#/components/schemas/Success"
+      },
+      "DeletePushResponse": {
+        "$ref": "#/components/schemas/Success"
+      },
+      "GetMyPrivateInfoResponse": {
+        "$ref": "#/components/schemas/MyPrivateInfoSuccess"
+      },
+      "PutEmailResponse": {
+        "$ref": "#/components/schemas/EmailUpdated"
+      },
+      "PutPasswordResponse": {
+        "$ref": "#/components/schemas/PasswordUpdated"
+      }
+    }
+  }
+}

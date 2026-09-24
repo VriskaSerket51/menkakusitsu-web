@@ -1,4 +1,5 @@
-import { Permission, v1 } from "@common-jshs/menkakusitsu-lib";
+import { Permission } from "@/auth";
+import type * as apiTypes from "@/api/types";
 import {
   Box,
   Paper,
@@ -13,29 +14,29 @@ import {
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 
-import { Api, Utility } from "@/utils";
+import { api, utilities } from "@/utils";
 import Particle from "@/components/particle";
-import { InfoTable } from "@/components/panels/SpecialroomInfoPanel";
-import { setFooterActive, setHeaderActive } from "@/hooks/useNavbar";
+import { InfoTable } from "@/components/panels/specialroom-info-panel";
+import { setFooterActive, setHeaderActive } from "@/hooks/use-navbar";
 
 export default function DownloadScreen() {
   const [attendanceInfo, setAttendanceInfo] =
-    useState<v1.AttendanceList | null>(null);
-  const [information, setInformation] = useState<v1.SpecialroomInfo[] | null>(
+    useState<apiTypes.AttendanceList | null>(null);
+  const [information, setInformation] = useState<apiTypes.SpecialroomInfo[] | null>(
     null
   );
   const [isLoading, setIsLoading] = useState(true);
 
-  const when = parseInt(Utility.getParameter("when", "1"));
+  const when = parseInt(utilities.getParameter("when", "1"));
 
   useEffect(() => {
-    Api.getAttendanceList({ when: when }).then((result) => {
+    api.getAttendanceList({ when: when }).then((result) => {
       setAttendanceInfo(result.list);
-      Api.getSpecialroomInfo({}).then((result) => {
+      api.getSpecialroomInfo({}).then((result) => {
         setInformation(result.information);
         setIsLoading(false);
-      });
-    });
+      }).catch(() => { setIsLoading(false); });
+    }).catch(() => { setIsLoading(false); });
 
     setHeaderActive(false);
     setFooterActive(false);
@@ -126,7 +127,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-const parseAttendanceList = (list: string[][]) => {
+const parseAttendanceList = (list: apiTypes.AttendanceList["big"]) => {
   return (
     <>
       <TableContainer component={Paper}>

@@ -1,4 +1,4 @@
-import { Permission } from "@common-jshs/menkakusitsu-lib";
+import { Permission } from "@/auth";
 import {
   Box,
   Button,
@@ -16,13 +16,13 @@ import {
   Typography,
   IconButton,
 } from "@mui/material";
-import { DeleteOutline, UploadFile } from "@mui/icons-material";
+import { DeleteOutlined, UploadFile } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 
-import Popup from "@/components/popup";
-import { Api, Constants } from "@/utils";
+import popup from "@/components/popup";
+import { api, constants } from "@/utils";
 import { TitleText } from "@/components/basics";
-import { SubmitButton } from "@/components/basics/StyledButton";
+import { SubmitButton } from "@/components/basics/styled-button";
 import { useNavigate, useParams } from "@/router";
 
 export default function CreateScreen() {
@@ -43,12 +43,12 @@ export default function CreateScreen() {
   };
 
   useEffect(() => {
-    Api.getBbsPostHeaders({ board: board }).then((result) => {
+    api.getBbsPostHeaders({ board: board }).then((result) => {
       setHeaders(result.headers);
-    });
+    }).catch(() => { /* Api already displayed the error. */ });
   }, [board]);
 
-  const onPostBbsPost = (e: React.MouseEvent<HTMLFormElement>) => {
+  const onPostBbsPost = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
     const title = data.get("title")?.toString();
@@ -58,8 +58,8 @@ export default function CreateScreen() {
     if (!title || !content || !header) {
       return;
     }
-    Popup.startLoading("제출 중입니다...");
-    Api.postBbsPost(
+    popup.startLoading("제출 중입니다...");
+    api.postBbsPost(
       {
         title: title,
         content: content,
@@ -69,10 +69,10 @@ export default function CreateScreen() {
       },
       files
     ).then((response) => {
-      if (Api.isSuccessed(response)) {
-        Popup.stopLoading();
-        Popup.openConfirmDialog(
-          Constants.DialogTitle.Info,
+      if (api.isSuccess(response)) {
+        popup.stopLoading();
+        popup.openConfirmDialog(
+          constants.DialogTitle.Info,
           "피드백 제출이 완료되었습니다.",
           () => {
             navigate("/bbs/:board/:postId/view", {
@@ -81,10 +81,10 @@ export default function CreateScreen() {
           }
         );
       } else {
-        Popup.stopLoading();
-        Popup.openConfirmDialog(Constants.DialogTitle.Info, response.message);
+        popup.stopLoading();
+        popup.openConfirmDialog(constants.DialogTitle.Info, response.message);
       }
-    });
+    }).catch(() => { /* Api already displayed the error. */ });
   };
 
   return (
@@ -111,17 +111,19 @@ export default function CreateScreen() {
               피드백 작성
             </TitleText>
             <Grid container spacing={2}>
-              <Grid item xs={10}>
+              <Grid size={10}>
                 <TextField
                   size="small"
                   label="제목"
                   name="title"
                   fullWidth
                   required
-                  inputProps={{ maxLength: 30 }}
+                  slotProps={{
+                    htmlInput: { maxLength: 30 }
+                  }}
                 />
               </Grid>
-              <Grid item xs={2}>
+              <Grid size={2}>
                 <FormControl size="small" fullWidth>
                   <InputLabel id="title-header-label">말머리</InputLabel>
                   <Select
@@ -159,7 +161,9 @@ export default function CreateScreen() {
               multiline
               rows={20}
               required
-              inputProps={{ maxLength: 500 }}
+              slotProps={{
+                htmlInput: { maxLength: 500 }
+              }}
             />
             <Box
               sx={{
@@ -195,7 +199,7 @@ export default function CreateScreen() {
                         removeFile(file);
                       }}
                     >
-                      <DeleteOutline />
+                      <DeleteOutlined />
                     </IconButton>
                   </Typography>
                 );

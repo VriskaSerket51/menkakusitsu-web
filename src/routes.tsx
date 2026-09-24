@@ -1,3 +1,4 @@
+import { hasPermission } from "@/auth";
 import { Fragment, ReactNode, Suspense } from "react";
 import {
   createBrowserRouter,
@@ -16,11 +17,11 @@ import {
   generatePreservedRoutes,
   generateRegularRoutes,
 } from "@generouted/react-router/core";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/use-auth";
 import { Navigate } from "@/router";
 
 type Element = {
-  (): JSX.Element;
+  (): React.JSX.Element;
   permission?: number;
   exact?: boolean;
 };
@@ -61,7 +62,7 @@ const PermissionCheck = (props: PermissionCheckProps) => {
   if (
     permission == undefined ||
     (exact && payload.permission == permission) ||
-    (!exact && payload.hasPermission(permission))
+    (!exact && hasPermission(payload, permission))
   ) {
     return children;
   } else {
@@ -121,7 +122,7 @@ const app = {
 };
 const fallback = { path: "*", Component: _404?.default || Fragment };
 
-export const routes: RouteObject[] = [
+const routes: RouteObject[] = [
   { ...app, children: [...regularRoutes, fallback] },
 ];
 export const Routes = () => (

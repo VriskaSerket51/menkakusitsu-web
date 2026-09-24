@@ -24,7 +24,6 @@ dist-ssr
 *.sw?
 
 .npmrc
-package-lock.json
 
 # Env
 .env.development

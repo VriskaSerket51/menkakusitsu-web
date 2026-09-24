@@ -1,11 +1,11 @@
-import { Permission } from "@common-jshs/menkakusitsu-lib";
+import { Permission } from "@/auth";
 import { Box, Divider, Paper, Typography } from "@mui/material";
 import { useState, useEffect, useMemo } from "react";
 
 import { ChatController, MuiChat } from "@/components/chat-ui-react";
-import { Api } from "@/utils";
-import { setFooterActive, setHeaderActive } from "@/hooks/useNavbar";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { api } from "@/utils";
+import { setFooterActive, setHeaderActive } from "@/hooks/use-navbar";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
 const BOT_NAME = "이디봇";
 
@@ -62,13 +62,13 @@ export default function IdbotScreen() {
           avatar: "https://cdn-icons-png.flaticon.com/512/1177/1177594.png",
           username: "나",
         });
-        Api.getIdbotChat({ chatInput: response.value }).then((result) => {
-          if (Api.isSuccessed(result)) {
+        api.getIdbotChat({ chatInput: response.value }).then((result) => {
+          if (api.isSuccess(result)) {
             addBotMessage(result.chatOutput);
           } else {
             addBotMessage(result.message);
           }
-        });
+        }).catch(() => { /* Api already displayed the error. */ });
       }
     );
   }, [chatCtl]);

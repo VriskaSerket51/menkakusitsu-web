@@ -37,13 +37,15 @@ export function DialogComponent(props: DialogComponentProps) {
     <Dialog
       open={isOpened}
       maxWidth="sm"
-      TransitionComponent={Transition}
       fullWidth
       onClose={() => {
         if (onCancel) {
           close();
           onCancel();
         }
+      }}
+      slots={{
+        transition: Transition
       }}
     >
       <DialogTitle>

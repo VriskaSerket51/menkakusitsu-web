@@ -1,9 +1,9 @@
-import { Permission } from "@common-jshs/menkakusitsu-lib";
+import { Permission } from "@/auth";
 import { useEffect } from "react";
 import { Container, Paper } from "@mui/material";
 
-import RegisterPanel from "@/components/panels/RegisterPanel";
-import { setHeaderActive } from "@/hooks/useNavbar";
+import RegisterPanel from "@/components/panels/register-panel";
+import { setHeaderActive } from "@/hooks/use-navbar";
 
 export default function RegisterScreen() {
   useEffect(() => {

@@ -1,4 +1,6 @@
-import { Permission, v1 } from "@common-jshs/menkakusitsu-lib";
+import { getServiceDate } from "@/utils/service-date";
+import { Permission } from "@/auth";
+import type * as apiTypes from "@/api/types";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -23,22 +25,22 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 
-import Popup from "@/components/popup";
-import { Api, Constants } from "@/utils";
+import popup from "@/components/popup";
+import { api, constants } from "@/utils";
 import { Text, TitleText } from "@/components/basics";
-import { SpecialroomInfoPanel } from "@/components/panels/SpecialroomInfoPanel";
-import { SubmitButton } from "@/components/basics/StyledButton";
+import { SpecialroomInfoPanel } from "@/components/panels/specialroom-info-panel";
+import { SubmitButton } from "@/components/basics/styled-button";
 
 export default function ApplyScreen() {
-  const [managerInfo, setManagerInfo] = useState<v1.UserInfo | null>(null);
-  const [locationInfos, setLocationInfos] = useState<v1.LocationInfo[]>([]);
-  const [purposeInfos, setPurposeInfos] = useState<v1.PurposeInfo[]>([]);
-  const [studentInfos, setStudentInfos] = useState<v1.UserInfo[]>([]);
-  const [teacherInfos, setTeacherInfos] = useState<v1.UserInfo[]>([]);
+  const [managerInfo, setManagerInfo] = useState<apiTypes.UserInfo | null>(null);
+  const [locationInfos, setLocationInfos] = useState<apiTypes.LocationInfo[]>([]);
+  const [purposeInfos, setPurposeInfos] = useState<apiTypes.PurposeInfo[]>([]);
+  const [studentInfos, setStudentInfos] = useState<apiTypes.UserInfo[]>([]);
+  const [teacherInfos, setTeacherInfos] = useState<apiTypes.UserInfo[]>([]);
 
   const [when, setWhen] = useState(1);
-  const [applicants, setApplicants] = useState<v1.UserInfo[]>([]);
-  const [teacher, setTeacher] = useState<v1.UserInfo | null>(null);
+  const [applicants, setApplicants] = useState<apiTypes.UserInfo[]>([]);
+  const [teacher, setTeacher] = useState<apiTypes.UserInfo | null>(null);
 
   const [activeStep, setActiveStep] = useState(0);
 
@@ -176,7 +178,7 @@ export default function ApplyScreen() {
               setApplicants(newValue);
             }}
             options={studentInfos}
-            getOptionLabel={(option) => option.value}
+            getOptionLabel={(option) => option.value ?? option.name}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -200,7 +202,7 @@ export default function ApplyScreen() {
               setTeacher(newValue);
             }}
             options={teacherInfos}
-            getOptionLabel={(option) => option.value}
+            getOptionLabel={(option) => option.value ?? option.name}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -228,34 +230,21 @@ export default function ApplyScreen() {
   };
 
   useEffect(() => {
-    Api.getSpecialroomManagerInfo({ when: dayjs().format("YYYY-MM-DD") }).then(
-      (result) => {
-        if (result.status >= 0) {
-          setManagerInfo(result.manager);
-        }
-        Api.getSpecialroomLocationInfo({}).then((result) => {
-          setLocationInfos(result.locationInfo);
-          Api.getSpecialroomPurposeInfo({}).then((result) => {
-            setPurposeInfos(result.purposeInfo);
-            Api.getSpecialroomStudentInfo({}).then((result) => {
-              setStudentInfos(result.studentInfo);
-              Api.getSpecialroomTeacherInfo({}).then((result) => {
-                setTeacherInfos(result.teacherInfo);
-              });
-            });
-          });
-        });
-      }
-    );
-  }, []);
-
-  const onPostApply = (e: React.MouseEvent<HTMLFormElement>) => {
+    // A missing daily manager must not block the other independent choices.
+    void Promise.allSettled([
+      api.getSpecialroomManagerInfo({ when: getServiceDate() }).then(result => setManagerInfo(result.manager)),
+      api.getSpecialroomLocationInfo({}).then(result => setLocationInfos(result.locationInfo)),
+      api.getSpecialroomPurposeInfo({}).then(result => setPurposeInfos(result.purposeInfo)),
+      api.getSpecialroomStudentInfo({}).then(result => setStudentInfos(result.studentInfo)),
+      api.getSpecialroomTeacherInfo({}).then(result => setTeacherInfos(result.teacherInfo)),
+    ]);
+  }, []);  const onPostApply = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
     const location = data.get("location")?.toString();
     if (!location) {
-      Popup.openConfirmDialog(
-        Constants.DialogTitle.Alert,
+      popup.openConfirmDialog(
+        constants.DialogTitle.Alert,
         "사용 장소 선택을 하지 않으셨습니다."
       );
       setActiveStep(1);
@@ -263,59 +252,59 @@ export default function ApplyScreen() {
     }
     const purpose = data.get("purpose")?.toString();
     if (!purpose) {
-      Popup.openConfirmDialog(
-        Constants.DialogTitle.Alert,
+      popup.openConfirmDialog(
+        constants.DialogTitle.Alert,
         "사용 목적 선택을 하지 않으셨습니다."
       );
       setActiveStep(2);
       return;
     }
     if (applicants.length === 0) {
-      Popup.openConfirmDialog(
-        Constants.DialogTitle.Alert,
+      popup.openConfirmDialog(
+        constants.DialogTitle.Alert,
         "학생 명단 선택을 하지 않으셨습니다."
       );
       setActiveStep(3);
       return;
     }
     if (!teacher) {
-      Popup.openConfirmDialog(
-        Constants.DialogTitle.Alert,
+      popup.openConfirmDialog(
+        constants.DialogTitle.Alert,
         "선생님 선택을 하지 않으셨습니다."
       );
       setActiveStep(4);
       return;
     }
-    Popup.startLoading("특별실을 신청하는 중입니다...");
-    Api.postSpecialroomApply({
+    popup.startLoading("특별실을 신청하는 중입니다...");
+    api.postSpecialroomApply({
       location: location,
       purpose: purpose,
-      applicants: applicants,
+      applicants: applicants.map(user => ({ ...user, value: user.value ?? user.name })),
       teacherUid: teacher.uid,
       when: when,
     }).then((result) => {
-      if (Api.isSuccessed(result)) {
-        Popup.stopLoading();
-        Popup.openYesNoDialog(
-          Constants.DialogTitle.Info,
+      if (api.isSuccess(result)) {
+        popup.stopLoading();
+        popup.openYesNoDialog(
+          constants.DialogTitle.Info,
           "특별실 신청에 성공했습니다. 신청 현황 페이지를 보시겠습니까?",
           () => {
             navigate("/specialroom/status");
           }
         );
-        Api.postUserPush({
+        api.postUserPush({
           targetUid: teacher.uid,
           notification: {
             title: "학생들이 특별실을 신청했습니다.",
             body: purpose.toString(),
             link: `${import.meta.env.VITE_WEB_PREFIX}/specialroom/management`,
           },
-        });
+        }).catch(() => { /* Api already displayed the error. */ });
       } else {
-        Popup.stopLoading();
-        Popup.openConfirmDialog(Constants.DialogTitle.Info, result.message);
+        popup.stopLoading();
+        popup.openConfirmDialog(constants.DialogTitle.Info, result.message);
       }
-    });
+    }).catch(() => { /* Api already displayed the error. */ });
   };
 
   return (
@@ -356,8 +345,10 @@ export default function ApplyScreen() {
                         {step.title}
                       </StepLabel>
                       <StepContent
-                        TransitionProps={{
-                          unmountOnExit: false,
+                        slotProps={{
+                          transition: {
+                            unmountOnExit: false,
+                          }
                         }}
                       >
                         {step.content}

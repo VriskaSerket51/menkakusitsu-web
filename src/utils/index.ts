@@ -1,5 +1,5 @@
-export * as Api from "./Api";
-export * as Constants from "./Constants";
-export * as Firebase from "./Firebase";
-export * as Storage from "./Storage";
-export * as Utility from "./Utility";
+export * as api from "./api";
+export * as constants from "./constants";
+export * as firebase from "./firebase";
+export * as storage from "./storage";
+export * as utilities from "./utilities";

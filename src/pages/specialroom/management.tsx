@@ -1,4 +1,5 @@
-import { Permission, v1 } from "@common-jshs/menkakusitsu-lib";
+import { Permission } from "@/auth";
+import type * as apiTypes from "@/api/types";
 import {
   Alert,
   Box,
@@ -14,24 +15,24 @@ import {
 } from "@mui/material";
 import { useState, useEffect } from "react";
 
-import Popup from "@/components/popup";
-import { Api, Utility } from "@/utils";
+import popup from "@/components/popup";
+import { api, utilities } from "@/utils";
 import { Text, TitleText } from "@/components/basics";
-import { SpecialroomInfoPanel } from "@/components/panels/SpecialroomInfoPanel";
-import { useAuth } from "@/hooks/useAuth";
+import { SpecialroomInfoPanel } from "@/components/panels/specialroom-info-panel";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function ManagementScreen() {
-  const [information, setInformation] = useState<v1.SpecialroomInfo[]>([]);
+  const [information, setInformation] = useState<apiTypes.SpecialroomInfo[]>([]);
   const { payload } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    Api.getSpecialroomInfo({}).then((result) => {
+    api.getSpecialroomInfo({}).then((result) => {
       setInformation(
         result.information.filter((info) => info.teacher.uid == payload.uid)
       );
       setIsLoading(false);
-    });
+    }).catch(() => { setIsLoading(false); });
   }, [payload]);
 
   return (
@@ -61,10 +62,11 @@ export default function ManagementScreen() {
               spacing={2}
               direction="row"
               useFlexGap
-              flexWrap="wrap"
-              mt="32px"
-              sx={{ width: "100%" }}
-            >
+              sx={{
+                flexWrap: "wrap",
+                mt: "32px",
+                width: "100%"
+              }}>
               <Box
                 sx={{
                   textAlign: "center",
@@ -136,20 +138,25 @@ export default function ManagementScreen() {
 
 type InfoCellProps = {
   state: number;
-  information: v1.SpecialroomInfo[];
-  setInformation: React.Dispatch<React.SetStateAction<v1.SpecialroomInfo[]>>;
+  information: apiTypes.SpecialroomInfo[];
+  setInformation: React.Dispatch<React.SetStateAction<apiTypes.SpecialroomInfo[]>>;
 };
 
 function InfoCell(props: InfoCellProps) {
   const { state, information, setInformation } = props;
 
-  const payload = Utility.getTokenPayload();
+  const payload = utilities.getTokenPayload();
 
   let count = 0;
-  const final: v1.SpecialroomInfo[] = [];
+  const final: apiTypes.SpecialroomInfo[] = [];
   const result = (
     <>
-      <Stack direction="column" justifyContent="center" alignItems="flex-start">
+      <Stack
+        direction="column"
+        sx={{
+          justifyContent: "center",
+          alignItems: "flex-start"
+        }}>
         {information.map((information) => {
           if (information.state === state) {
             count++;
@@ -180,7 +187,7 @@ function InfoCell(props: InfoCellProps) {
                         if (event.target.checked) {
                           final.push(information);
                         } else {
-                          Utility.arrayRemove(final, information);
+                          utilities.arrayRemove(final, information);
                         }
                       }}
                     />
@@ -197,20 +204,22 @@ function InfoCell(props: InfoCellProps) {
             <Button
               color="success"
               onClick={() => {
-                Popup.startLoading("처리 중입니다...");
-                Api.putSpecialroomInfo({
-                  information: final.map((information) => {
-                    information.state = 1;
-                    return information;
-                  }),
+                popup.startLoading("처리 중입니다...");
+                api.putSpecialroomInfo({
+                  information: final.map(information => ({
+                    ...information,
+                    state: 1,
+                    master: { ...information.master, value: information.master.value ?? information.master.name },
+                    teacher: { ...information.teacher, value: information.teacher.value ?? information.teacher.name },
+                  })),
                 }).then((result) => {
-                  Popup.stopLoading();
+                  popup.stopLoading();
                   setInformation(
                     result.information.filter(
                       (info) => info.teacher.uid == payload.uid
                     )
                   );
-                });
+                }).catch(() => { /* Api already displayed the error. */ });
               }}
             >
               승인
@@ -220,20 +229,22 @@ function InfoCell(props: InfoCellProps) {
             <Button
               color="error"
               onClick={() => {
-                Popup.startLoading("처리 중입니다...");
-                Api.putSpecialroomInfo({
-                  information: final.map((information) => {
-                    information.state = -1;
-                    return information;
-                  }),
+                popup.startLoading("처리 중입니다...");
+                api.putSpecialroomInfo({
+                  information: final.map(information => ({
+                    ...information,
+                    state: -1,
+                    master: { ...information.master, value: information.master.value ?? information.master.name },
+                    teacher: { ...information.teacher, value: information.teacher.value ?? information.teacher.name },
+                  })),
                 }).then((result) => {
-                  Popup.stopLoading();
+                  popup.stopLoading();
                   setInformation(
                     result.information.filter(
                       (info) => info.teacher.uid == payload.uid
                     )
                   );
-                });
+                }).catch(() => { /* Api already displayed the error. */ });
               }}
             >
               거부

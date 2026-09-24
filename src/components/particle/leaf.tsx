@@ -1,22 +1,9 @@
-import Particles, { initParticlesEngine } from "@tsparticles/react";
-import { useEffect, useState } from "react";
-import { loadFull } from "tsparticles";
+import Particles from "@tsparticles/react";
 
 import leaf from "@/assets/particles/fall/leaf.png";
 
 export function LeafParticle() {
-  const [init, setInit] = useState(false);
-
-  useEffect(() => {
-    initParticlesEngine(async (engine) => {
-      await loadFull(engine, false);
-    }).then(() => {
-      setInit(true);
-    });
-  }, []);
-
   return (
-    init && (
       <Particles
         options={{
           particles: {
@@ -87,6 +74,5 @@ export function LeafParticle() {
           },
         }}
       />
-    )
   );
 }

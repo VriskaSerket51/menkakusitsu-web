@@ -14,16 +14,16 @@ export interface Message<C extends MessageContent> {
   deletedAt?: Date;
 }
 
-export type MessageContent = string | JSX.Element;
+export type MessageContent = string | React.JSX.Element;
 
 export interface TextMessage extends Message<string> {
   type: 'text';
   content: string;
 }
 
-export interface JSXMessage extends Message<JSX.Element> {
+export interface JsxMessage extends Message<React.JSX.Element> {
   type: 'jsx';
-  content: JSX.Element;
+  content: React.JSX.Element;
 }
 
 export interface ActionRequest {
@@ -76,7 +76,7 @@ export interface AudioActionRequest extends ActionRequest {
 
 export interface CustomActionRequest extends ActionRequest {
   type: 'custom';
-  Component: JSX.Element;
+  Component: React.JSX.Element;
   response?: CustomActionResponse;
 }
 
@@ -128,6 +128,6 @@ export interface OnActionChanged {
   (request: ActionRequest, response?: ActionResponse): void;
 }
 
-export interface OnActionResponsed {
+export interface OnActionResponse {
   (response: ActionResponse): void;
 }

@@ -1,4 +1,5 @@
-import { v1, Permission } from "@common-jshs/menkakusitsu-lib";
+import { Permission, hasPermission } from "@/auth";
+import type * as apiTypes from "@/api/types";
 import {
   Box,
   Button,
@@ -14,14 +15,14 @@ import {
 import { Close } from "@mui/icons-material";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { Api, Utility, Constants } from "@/utils/";
-import Popup from "@/components/popup";
+import { api, utilities, constants } from "@/utils/";
+import popup from "@/components/popup";
 import ListScreen from "@/pages/bbs/[board]/list";
 import { IconLink, Text } from "@/components/basics";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/use-auth";
 import { useNavigate, useParams } from "@/router";
-import Spinner from "@/components/basics/Spinner";
-import { getSpanInfo } from "@/utils/Utility";
+import Spinner from "@/components/basics/spinner";
+import { getSpanInfo } from "@/utils/utilities";
 
 export default function ViewScreen() {
   const { board, postId } = useParams("/bbs/:board/:postId/view");
@@ -30,27 +31,27 @@ export default function ViewScreen() {
   const { payload } = useAuth();
 
   const [isLoading, setIsLoading] = useState(true);
-  const [post, setPost] = useState<v1.BbsPost | null>(null);
-  const [attachments, setAttachments] = useState<v1.FileInfo[] | undefined>();
+  const [post, setPost] = useState<apiTypes.BbsPost | null>(null);
+  const [attachments, setAttachments] = useState<apiTypes.FileInfo[] | undefined>();
 
   const refresh = useCallback(() => {
     setIsLoading(true);
-    Api.getBbsPost({ board: board, postId: Number(postId) }).then((result) => {
-      if (Api.isSuccessed(result)) {
+    api.getBbsPost({ board: board, postId: Number(postId) }).then((result) => {
+      if (api.isSuccess(result)) {
         setIsLoading(false);
         setPost(result.post);
         setAttachments(result.attachments);
       } else {
-        Popup.stopLoading();
-        Popup.openConfirmDialog(
-          Constants.DialogTitle.Info,
+        popup.stopLoading();
+        popup.openConfirmDialog(
+          constants.DialogTitle.Info,
           result.message,
           () => {
             navigate("/bbs/:board/list", { params: { board: board } });
           }
         );
       }
-    });
+    }).catch(() => { setIsLoading(false); });
   }, [board, navigate, postId]);
 
   useEffect(() => {
@@ -121,7 +122,7 @@ export default function ViewScreen() {
                       목록
                     </Button>
                     {(payload.uid === post.owner.uid ||
-                      payload.hasPermission(Permission.Dev)) && (
+                      hasPermission(payload, Permission.Dev)) && (
                       <Button
                         variant="contained"
                         color="primary"
@@ -136,21 +137,21 @@ export default function ViewScreen() {
                     )}
                     {post &&
                       (payload.uid === post.owner.uid ||
-                        payload.hasPermission(Permission.Dev)) && (
+                        hasPermission(payload, Permission.Dev)) && (
                         <Button
                           variant="contained"
                           color="error"
                           onClick={() => {
-                            Popup.openYesNoDialog(
-                              Constants.DialogTitle.Alert,
+                            popup.openYesNoDialog(
+                              constants.DialogTitle.Alert,
                               "정말 피드백을 삭제하실 건가요?",
                               () => {
-                                Api.deleteBbsPost({
+                                api.deleteBbsPost({
                                   board: board,
                                   postId: post.id,
                                 }).then((result) => {
-                                  Popup.openConfirmDialog(
-                                    Constants.DialogTitle.Info,
+                                  popup.openConfirmDialog(
+                                    constants.DialogTitle.Info,
                                     "피드백이 삭제되었습니다.",
                                     () => {
                                       navigate("/bbs/:board/list", {
@@ -158,7 +159,7 @@ export default function ViewScreen() {
                                       });
                                     }
                                   );
-                                });
+                                }).catch(() => { setIsLoading(false); });
                               }
                             );
                           }}
@@ -188,50 +189,50 @@ function CommentSection() {
   const navigate = useNavigate();
   const { payload } = useAuth();
 
-  const page = Number(Utility.getParameter("page", "1"));
-  const commentPage = Number(Utility.getParameter("commentPage", "1"));
+  const page = Number(utilities.getParameter("page", "1"));
+  const commentPage = Number(utilities.getParameter("commentPage", "1"));
 
   const [isLoading, setIsLoading] = useState(true);
   const [commentCount, setCommentCount] = useState(0);
-  const [commentList, setCommentList] = useState<v1.BbsComment[]>([]);
+  const [commentList, setCommentList] = useState<apiTypes.BbsComment[]>([]);
 
   const refresh = useCallback(() => {
     setIsLoading(true);
-    Api.getBbsCommentList({
+    api.getBbsCommentList({
       board: board,
       postId: Number(postId),
       commentPage: commentPage,
-      commentListSize: Constants.COMMENT_LIST_SIZE,
+      commentListSize: constants.COMMENT_LIST_SIZE,
     }).then((result) => {
       setIsLoading(false);
       setCommentCount(result.commentCount);
       setCommentList(result.list);
-    });
+    }).catch(() => { setIsLoading(false); });
   }, [commentPage, board, postId]);
 
-  const onPostComment = (event: React.MouseEvent<HTMLFormElement>) => {
+  const onPostComment = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const comment = data.get("comment")?.toString();
     if (!comment) {
       return;
     }
-    Popup.startLoading("작성 중입니다...");
-    Api.postBbsComment({
+    popup.startLoading("작성 중입니다...");
+    api.postBbsComment({
       board: board,
       postId: Number(postId),
       content: comment,
     }).then((result) => {
-      Popup.stopLoading();
+      popup.stopLoading();
       refresh();
-      if (Api.isSuccessed(result)) {
+      if (api.isSuccess(result)) {
         if (commentRef?.current) {
           commentRef.current.value = "";
         }
       } else {
-        Popup.openConfirmDialog(Constants.DialogTitle.Info, result.message);
+        popup.openConfirmDialog(constants.DialogTitle.Info, result.message);
       }
-    });
+    }).catch(() => { setIsLoading(false); });
   };
 
   useEffect(() => {
@@ -239,22 +240,30 @@ function CommentSection() {
   }, [refresh]);
 
   return (
-    <Box component="form" onSubmit={onPostComment} mt="16px">
+    <Box component="form" onSubmit={onPostComment} sx={{
+      mt: "16px"
+    }}>
       <Text variant="h6">의견 {isLoading ? 0 : commentCount}개</Text>
-      <Stack spacing={2} direction="row" display="flex">
+      <Stack spacing={2} direction="row" sx={{
+        display: "flex"
+      }}>
         <TextField
           name="comment"
           inputRef={commentRef}
           fullWidth
           multiline
           placeholder="댓글"
-          inputProps={{ maxLength: 300 }}
+          slotProps={{
+            htmlInput: { maxLength: 300 }
+          }}
         />
         <Button type="submit" variant="contained">
           작성
         </Button>
       </Stack>
-      <Stack spacing={2} mt="16px">
+      <Stack spacing={2} sx={{
+        mt: "16px"
+      }}>
         {isLoading && <Spinner text="댓글을 불러오는 중입니다..." />}
         {!isLoading &&
           commentList.map((comment) => (
@@ -267,12 +276,12 @@ function CommentSection() {
                 }}
               >
                 <Grid container spacing={3}>
-                  <Grid item xs={8}>
+                  <Grid size={8}>
                     <Text noWrap sx={{ width: "100%" }}>
                       {comment.owner.name}
                     </Text>
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid size={4}>
                     <Box
                       sx={{
                         width: "100%",
@@ -286,28 +295,28 @@ function CommentSection() {
                         {getSpanInfo(comment.createdDate)}
                       </Text>
                       {(payload.uid === comment.owner.uid ||
-                        payload.hasPermission(Permission.Dev)) && (
+                        hasPermission(payload, Permission.Dev)) && (
                         <IconButton
                           size="small"
                           color="error"
                           onClick={() => {
-                            Popup.openYesNoDialog(
-                              Constants.DialogTitle.Alert,
+                            popup.openYesNoDialog(
+                              constants.DialogTitle.Alert,
                               "정말 의견을 삭제하실 건가요?",
                               () => {
-                                Api.deleteBbsComment({
+                                api.deleteBbsComment({
                                   board: board,
                                   postId: Number(postId),
                                   commentId: comment.id,
                                 }).then((result) => {
-                                  Popup.openConfirmDialog(
-                                    Constants.DialogTitle.Info,
+                                  popup.openConfirmDialog(
+                                    constants.DialogTitle.Info,
                                     "의견이 삭제되었습니다.",
                                     () => {
                                       refresh();
                                     }
                                   );
-                                });
+                                }).catch(() => { setIsLoading(false); });
                               }
                             );
                           }}
@@ -326,7 +335,7 @@ function CommentSection() {
       </Stack>
       <Box sx={{ display: "flex", justifyContent: "center" }}>
         <Pagination
-          count={Math.ceil(commentCount / Constants.COMMENT_LIST_SIZE)}
+          count={Math.ceil(commentCount / constants.COMMENT_LIST_SIZE)}
           page={commentPage}
           onChange={(event: React.ChangeEvent<unknown>, value: number) => {
             navigate(

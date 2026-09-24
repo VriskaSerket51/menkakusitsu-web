@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { useSnackbar } from "notistack";
 
 import { DefaultSnackbar } from "@/components/snackbar";
-import { Firebase } from "@/utils";
+import { firebase } from "@/utils";
 
 export function FirebaseComponent() {
-  const [messaging] = useState(Firebase.getFirebaseMessaging());
+  const [messaging] = useState(firebase.getFirebaseMessaging());
   const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {

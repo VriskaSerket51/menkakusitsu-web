@@ -1,23 +1,10 @@
-import Particles, { initParticlesEngine } from "@tsparticles/react";
-import { useEffect, useState } from "react";
-import { loadFull } from "tsparticles";
+import Particles from "@tsparticles/react";
 
 import sakura1 from "@/assets/particles/sakura/1.png";
 import sakura4 from "@/assets/particles/sakura/4.png";
 
 export function SakuraParticle() {
-  const [init, setInit] = useState(false);
-
-  useEffect(() => {
-    initParticlesEngine(async (engine) => {
-      await loadFull(engine, false);
-    }).then(() => {
-      setInit(true);
-    });
-  }, []);
-
   return (
-    init && (
       <Particles
         options={{
           particles: {
@@ -93,6 +80,5 @@ export function SakuraParticle() {
           },
         }}
       />
-    )
   );
 }

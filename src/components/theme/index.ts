@@ -3,7 +3,7 @@ import {
   darkTheme,
   defaultTheme,
 } from "@/components/theme/themes";
-import { Storage, Utility } from "@/utils";
+import { storage, utilities } from "@/utils";
 
 export * from "./addon";
 
@@ -17,7 +17,7 @@ export type ThemeType =
   | "none";
 
 export const getThemeType = (): ThemeType => {
-  const { month, date } = Utility.getDayInfo();
+  const { month, date } = utilities.getDayInfo();
 
   if (month === 4 && date === 1) {
     return "april-fools";
@@ -43,7 +43,7 @@ export const getThemeType = (): ThemeType => {
   return "none";
 };
 
-export const getTheme = (type: ThemeType, colorScheme: Storage.ColorScheme) => {
+export const getTheme = (type: ThemeType, colorScheme: storage.ColorScheme) => {
   if (colorScheme == "dark") {
     return darkTheme;
   }
