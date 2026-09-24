@@ -34,11 +34,11 @@ API가 없어도 체크인된 `contracts/openapi.json`으로 `npm run generate:a
 - `orval.config.mjs`: Orval 생성 설정. 버전은 package.json/lockfile에 고정합니다.
 - `src/api/generated/`: 전체 요청/응답 타입과 호출 함수. 직접 수정하지 않습니다.
 - `src/api/types.ts`: 생성 타입에서 화면용 이름과 기존 래퍼용 응답 타입을 추출합니다. 필드 구조를 별도로 정의하지 않습니다.
-- `src/auth.ts`: JWT 표시용 데이터와 권한 상수·비교 함수. 서버의 인증 검증을 대체하지 않습니다.
+- `src/features/auth/token.ts`: JWT 표시용 데이터와 권한 상수·비교 함수. 서버의 인증 검증을 대체하지 않습니다.
 - `src/api/http.ts`: Axios 전송, API 주소, 제한 시간. 실패는 호출자에게 reject됩니다.
-- `LoginPanel.tsx`: 생성된 응답의 `status === 0`을 확인한 뒤에만 토큰을 사용합니다.
+- `login-panel.tsx`: 로그인 성공 응답으로 후속 화면을 처리합니다. 인증 실패는 HTTP 오류로 처리합니다.
 
-로그인은 공개 엔드포인트이므로 저장된 토큰이나 refresh를 요구하지 않습니다. 현재 생성 호출 함수는 로그인에 사용하고 나머지 화면 호출은 기존 utils/api.ts의 토큰 갱신·주입 경로를 유지합니다.
+로그인은 공개 엔드포인트이므로 저장된 토큰이나 refresh를 요구하지 않습니다. 모든 화면 호출은 생성 클라이언트를 사용하며 api/actions.ts는 세션 갱신·인증 헤더·오류 표시만 조합합니다. 쿼리 문자열과 multipart 본문은 생성 클라이언트가 구성합니다.
 다른 생성 함수를 화면에 직접 연결할 때는 인증 전송 계층을 연결해야 합니다.
 생성된 TypeScript 타입은 실제 응답에 대한 런타임 검증을 수행하지 않습니다.
 
@@ -57,6 +57,6 @@ npm run test:api-integration
 
 ## JWT 계약 동기화
 
-JWT 필드는 API의 src/contracts/auth.ts에 정의한 TokenClaimsSchema가 원본입니다. API는 Zod에서 타입을 추론하고, 웹은 OpenAPI로 생성한 TokenClaims를 사용합니다. PermissionValues에는 권한별 숫자 리터럴이 포함되며 웹의 권한 상수도 생성 타입으로 검사합니다.
+JWT 필드는 API의 src/contracts/features/auth/token.ts에 정의한 TokenClaimsSchema가 원본입니다. API는 Zod에서 타입을 추론하고, 웹은 OpenAPI로 생성한 TokenClaims를 사용합니다. PermissionValues에는 권한별 숫자 리터럴이 포함되며 웹의 권한 상수도 생성 타입으로 검사합니다.
 
 변경 순서: API에서 npm run generate:openapi → 웹에서 npm run generate:api -- --source ../menkakusitsu-api/openapi.json → 양쪽 테스트·타입 검사. 생성 파일은 직접 수정하지 않습니다. 웹의 디코딩은 UI 표시용이며, 서명 검증과 최종 권한 검사는 API가 수행합니다.
