@@ -1,4 +1,4 @@
-import {
+import type {
   ActionRequest,
   ActionResponse,
   ChatOption,
@@ -107,7 +107,7 @@ export class ChatController {
 
   removeOnMessagesChanged(callback: OnMessagesChanged): void {
     const idx = this.state.onMessagesChanged.indexOf(callback);
-    this.state.onActionChanged[idx] = (): void => {};
+    if (idx !== -1) this.state.onMessagesChanged.splice(idx, 1);
   }
 
   setActionRequest<T extends ActionRequest>(
