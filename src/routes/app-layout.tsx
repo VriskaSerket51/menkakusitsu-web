@@ -1,3 +1,4 @@
+import { NavigationProgress } from "@/components/layout/navigation-progress";
 import { SessionBoundary } from "@/features/auth/session-boundary";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { useAuth } from "@/features/auth/use-auth";
@@ -37,6 +38,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider theme={getTheme(getThemeType(), scheme)}>
       <CssBaseline />
+      <NavigationProgress />
       <ParticleComponent />
       <DialogContainer />
       <LoadingComponent />

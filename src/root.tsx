@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import "@/index.css";
 import "@/styles/fonts.css";
-import "@/styles/n-progress.css";
 
 export function Layout({ children }: { children: ReactNode }) {
   return <html lang="ko"><head>
