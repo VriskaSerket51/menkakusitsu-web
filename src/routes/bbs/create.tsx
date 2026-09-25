@@ -1,3 +1,6 @@
+import { useLoadError } from "@/hooks/use-load-error";
+import { LoadError } from "@/components/load-error";
+import { notify } from "@/components/snackbar/notify";
 import { PageSurface } from "@/components/layout/page-surface";
 import { PageForm } from "@/components/layout/page-layout";
 import type { Route } from "./+types/create";
@@ -21,14 +24,15 @@ import {
 import { DeleteOutlined, UploadFile } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 
-import { openConfirmDialog, startLoading, stopLoading } from "@/components/popup/hooks";
+import { startLoading, stopLoading } from "@/components/popup/hooks";
 import * as api from "@/api/actions";
-import * as constants from "@/utils/constants";
 import { TitleText } from "@/components/basics";
 import { SubmitButton } from "@/components/basics/styled-button";
 import { useNavigate, useParams } from "react-router";
 
 export default function CreateScreen() {
+  const { loadError, trackLoad } = useLoadError();
+
   const navigate = useNavigate();
   const { board } = useParams() as Route.ComponentProps["params"];
   const [headers, setHeaders] = useState<string[]>([]);
@@ -46,15 +50,14 @@ export default function CreateScreen() {
   };
 
   useEffect(() => {
-    api
-      .getBbsPostHeaders({ board: board })
+    trackLoad(api.getBbsPostHeaders({ board: board }, { silent: true }))
       .then((result) => {
         setHeaders(result.headers);
       })
       .catch(() => {
         /* Api already displayed the error. */
       });
-  }, [board]);
+  }, [board, trackLoad]);
 
   const onPostBbsPost = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -80,11 +83,13 @@ export default function CreateScreen() {
       )
       .then((response) => {
         stopLoading();
-        openConfirmDialog(constants.DialogTitle.Info, "피드백 제출이 완료되었습니다.", () => {
-          navigate(
-            href("/bbs/:board/:postId/view", { board: board, postId: String(response.postId) }),
-          );
-        });
+        notify("피드백 제출이 완료되었습니다.", "success");
+        navigate(
+          href("/bbs/:board/:postId/view", {
+            board: board,
+            postId: String(response.postId),
+          }),
+        );
       })
       .catch(() => {
         /* Api already displayed the error. */
@@ -93,6 +98,7 @@ export default function CreateScreen() {
 
   return (
     <>
+      <LoadError message={loadError} />
       <PageSurface maxWidth="md">
         <PageForm onSubmit={onPostBbsPost} sx={{ gap: "16px" }}>
           <TitleText color="secondary" variant="h2">
@@ -170,7 +176,13 @@ export default function CreateScreen() {
               sx={{ padding: "1em" }}
             >
               파일 업로드
-              <input name="data" type="file" multiple hidden onChange={onFileUpload} />
+              <input
+                name="data"
+                type="file"
+                multiple
+                hidden
+                onChange={onFileUpload}
+              />
             </Button>
             {files.map((file) => {
               return (
@@ -188,7 +200,11 @@ export default function CreateScreen() {
             })}
           </Box>
           <FormGroup>
-            <FormControlLabel control={<Checkbox />} label="비공개 피드백 작성" name="isPrivate" />
+            <FormControlLabel
+              control={<Checkbox />}
+              label="비공개 피드백 작성"
+              name="isPrivate"
+            />
           </FormGroup>
           <SubmitButton backgroundColor="primary.main" width="192px">
             작성하기

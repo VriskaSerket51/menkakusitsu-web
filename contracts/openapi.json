@@ -2503,79 +2503,6 @@
       }
     },
     "/v1/user/push": {
-      "post": {
-        "operationId": "postPush",
-        "tags": [
-          "user"
-        ],
-        "security": [
-          {
-            "accessToken": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PostPushResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HttpError"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication failed",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HttpError"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Insufficient permission",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HttpError"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HttpError"
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PostPushRequest"
-              }
-            }
-          }
-        }
-      },
       "put": {
         "operationId": "putPush",
         "tags": [
@@ -3632,36 +3559,6 @@
         "default": {},
         "type": "object",
         "properties": {}
-      },
-      "PostPushRequest": {
-        "type": "object",
-        "properties": {
-          "targetUid": {
-            "type": "number"
-          },
-          "notification": {
-            "type": "object",
-            "properties": {
-              "title": {
-                "type": "string"
-              },
-              "body": {
-                "type": "string"
-              },
-              "link": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "title",
-              "body"
-            ]
-          }
-        },
-        "required": [
-          "targetUid",
-          "notification"
-        ]
       },
       "PutEmailRequest": {
         "type": "object",
@@ -5041,9 +4938,6 @@
       },
       "PutTimetableResponse": {
         "$ref": "#/components/schemas/TimetableSuccess"
-      },
-      "PostPushResponse": {
-        "$ref": "#/components/schemas/Success"
       },
       "PutPushResponse": {
         "$ref": "#/components/schemas/Success"

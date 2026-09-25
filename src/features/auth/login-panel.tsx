@@ -1,11 +1,15 @@
+import { notify } from "@/components/snackbar/notify";
 import { Box, Button, Link, Stack, TextField } from "@mui/material";
 import { AccountBox } from "@mui/icons-material";
 import type { LoginSuccess } from "@/api/generated/models";
 
-import { openCancelableDialog, openConfirmDialog, startLoading, stopLoading } from "@/components/popup/hooks";
+import {
+  openCancelableDialog,
+  startLoading,
+  stopLoading,
+} from "@/components/popup/hooks";
 import { SubmitButton, Text, TitleText } from "@/components/basics";
 import * as api from "@/api/actions";
-import * as constants from "@/utils/constants";
 import * as firebase from "@/utils/firebase.client";
 import * as utilities from "@/utils/utilities";
 import { useNavigate } from "react-router";
@@ -25,7 +29,10 @@ export default function LoginPanel() {
 
     startLoading("로그인 중입니다...");
     try {
-      const result = await api.postLogin({ id, password: utilities.hashSha3(password) });
+      const result = await api.postLogin({
+        id,
+        password: utilities.hashSha3(password),
+      });
       await onLoginSuccess(result);
     } catch (error) {
       api.onApiError(error);
@@ -35,31 +42,25 @@ export default function LoginPanel() {
   };
 
   const onLoginSuccess = async (result: LoginSuccess) => {
-
     if (api.getPushApproved()) {
       await firebase.createPushToken();
     }
 
-
     if (result.callbacks) {
       if (result.callbacks.includes("needChangePw")) {
-        openConfirmDialog(
-          constants.DialogTitle.Alert,
+        notify(
           "기존 4자리 학번을 비밀번호로 사용하시는 경우, 비밀번호를 바꾸셔야합니다.",
-          () => {
-            navigate("/setting");
-          }
+          "warning",
         );
+        navigate("/setting");
         return;
       }
       if (result.callbacks.includes("needChangeEmail")) {
-        openConfirmDialog(
-          constants.DialogTitle.Alert,
+        notify(
           "비밀번호 복구 등의 서비스를 이용하시려면 이메일을 추가하셔야합니다.",
-          () => {
-            navigate("/setting");
-          }
+          "warning",
         );
+        navigate("/setting");
         return;
       }
     }
@@ -96,7 +97,7 @@ export default function LoginPanel() {
           name="id"
           autoComplete="username"
           slotProps={{
-            input: { sx: { borderRadius: "50px" } }
+            input: { sx: { borderRadius: "50px" } },
           }}
         />
         <TextField
@@ -108,7 +109,7 @@ export default function LoginPanel() {
           id="password"
           autoComplete="current-password"
           slotProps={{
-            input: { sx: { borderRadius: "50px" } }
+            input: { sx: { borderRadius: "50px" } },
           }}
         />
         <SubmitButton
@@ -124,15 +125,13 @@ export default function LoginPanel() {
           direction={{ xs: "column", sm: "row" }}
           sx={{
             justifyContent: "space-between",
-            alignItems: "center"
-          }}>
+            alignItems: "center",
+          }}
+        >
           <Link
             href="#"
             onClick={() => {
-              openConfirmDialog(
-                constants.DialogTitle.Info,
-                "현재 제공되지 않는 기능입니다."
-              );
+              notify("현재 제공되지 않는 기능입니다.", "info");
             }}
             variant="body1"
             underline="none"

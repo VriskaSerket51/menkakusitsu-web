@@ -35,3 +35,9 @@ test('HTTP failures reject and expose the public error without treating bad cred
     adapter: async () => { throw new Error('network failure'); },
   }), /network failure/);
 });
+
+test('SPA HTML fallback is rejected instead of being treated as API data', async () => {
+  await assert.rejects(postLogin({ id: 'student', password: 'digest' }, {
+    adapter: async config => ({ data: '<!DOCTYPE html><html></html>', status: 200, statusText: 'OK', headers: { 'content-type': 'text/html' }, config }),
+  }), error => error.code === 'ERR_BAD_RESPONSE');
+});

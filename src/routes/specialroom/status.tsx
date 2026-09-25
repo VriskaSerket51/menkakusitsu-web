@@ -23,7 +23,11 @@ import { CheckCircle, GroupAdd, HourglassTop } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { openYesNoDialog, startLoading, stopLoading } from "@/components/popup/hooks";
+import {
+  openYesNoDialog,
+  startLoading,
+  stopLoading,
+} from "@/components/popup/hooks";
 import * as api from "@/api/actions";
 import * as constants from "@/utils/constants";
 import { TitleText } from "@/components/basics";
@@ -33,7 +37,8 @@ import { SpecialroomInfoPanel } from "@/features/specialroom/info-panel";
 const steps = ["신청 완료", "승인 대기 중", "승인 완료"];
 
 export default function StatusScreen() {
-  const [applyStatus, setApplyStatus] = useState<apiTypes.SpecialroomInfo | null>(null);
+  const [applyStatus, setApplyStatus] =
+    useState<apiTypes.SpecialroomInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
   const activeRequest = useRef<AbortController | null>(null);
@@ -47,9 +52,13 @@ export default function StatusScreen() {
     setIsLoading(true);
     setLoadFailed(false);
     api
-      .getSpecialroomApply({ when }, { signal: controller.signal })
+      .getSpecialroomApply(
+        { when },
+        { signal: controller.signal, silent: true },
+      )
       .then((result) => {
-        if (!controller.signal.aborted) setApplyStatus(result?.specialroomInfo ?? null);
+        if (!controller.signal.aborted)
+          setApplyStatus(result?.specialroomInfo ?? null);
       })
       .catch(() => {
         if (!controller.signal.aborted) setLoadFailed(true);
@@ -61,18 +70,22 @@ export default function StatusScreen() {
 
   const onCancelApply = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    openYesNoDialog(constants.DialogTitle.Info, "정말 특별실 신청을 취소하시겠습니까?", () => {
-      startLoading("특별실 신청을 취소 중입니다...");
-      api
-        .deleteSpecialroomApply({ when: when })
-        .then((result) => {
-          stopLoading();
-          refresh();
-        })
-        .catch(() => {
-          /* Api already displayed the error. */
-        });
-    });
+    openYesNoDialog(
+      constants.DialogTitle.Info,
+      "정말 특별실 신청을 취소하시겠습니까?",
+      () => {
+        startLoading("특별실 신청을 취소 중입니다...");
+        api
+          .deleteSpecialroomApply({ when: when })
+          .then((result) => {
+            stopLoading();
+            refresh();
+          })
+          .catch(() => {
+            /* Api already displayed the error. */
+          });
+      },
+    );
   };
 
   useEffect(() => {
@@ -130,7 +143,9 @@ export default function StatusScreen() {
             <Box>
               {loadFailed ? (
                 <Box role="alert">
-                  <Typography color="error">신청 정보를 불러오지 못했습니다.</Typography>
+                  <Typography color="error">
+                    신청 정보를 불러오지 못했습니다.
+                  </Typography>
                   <Button onClick={refresh}>다시 시도</Button>
                 </Box>
               ) : !isLoading ? (
@@ -153,7 +168,8 @@ export default function StatusScreen() {
                     목적: {applyStatus.purpose}
                     {applyStatus.state === -1 && " - 거부됨"}
                     <br />
-                    명단: {applyStatus.applicants} - 총{applyStatus.applicants.split(",").length}
+                    명단: {applyStatus.applicants} - 총
+                    {applyStatus.applicants.split(",").length}
                     인
                     <br />
                     활동 시간: {applyStatus.when}차 면학
@@ -181,7 +197,11 @@ export default function StatusScreen() {
             <Stepper
               alternativeLabel
               activeStep={isLoading || loadFailed ? -1 : activeStep}
-              connector={<ColorlibConnector isapproved={applyStatus ? applyStatus.state : 0} />}
+              connector={
+                <ColorlibConnector
+                  isapproved={applyStatus ? applyStatus.state : 0}
+                />
+              }
             >
               {steps.map((label, index) => (
                 <Step key={label}>
@@ -202,7 +222,11 @@ export default function StatusScreen() {
               ))}
             </Stepper>
             {!isLoading && !loadFailed && applyStatus && (
-              <SubmitButton width="192px" backgroundColor="error.main" onClick={onCancelApply}>
+              <SubmitButton
+                width="192px"
+                backgroundColor="error.main"
+                onClick={onCancelApply}
+              >
                 신청 취소
               </SubmitButton>
             )}
@@ -222,21 +246,26 @@ const ColorlibConnector = styled(StepConnector)<{ isapproved: number }>(
     [`&.${stepConnectorClasses.active}`]: {
       [`& .${stepConnectorClasses.line}`]: {
         backgroundColor: `${
-          isapproved >= 0 ? theme.palette.success.light : theme.palette.error.light
+          isapproved >= 0
+            ? theme.palette.success.light
+            : theme.palette.error.light
         }`,
       },
     },
     [`&.${stepConnectorClasses.completed}`]: {
       [`& .${stepConnectorClasses.line}`]: {
         backgroundColor: `${
-          isapproved >= 0 ? theme.palette.success.light : theme.palette.error.light
+          isapproved >= 0
+            ? theme.palette.success.light
+            : theme.palette.error.light
         }`,
       },
     },
     [`& .${stepConnectorClasses.line}`]: {
       height: 10,
       border: 0,
-      backgroundColor: theme.palette.mode === "dark" ? theme.palette.grey[800] : "#eaeaf0",
+      backgroundColor:
+        theme.palette.mode === "dark" ? theme.palette.grey[800] : "#eaeaf0",
       borderRadius: 1,
     },
   }),
@@ -247,7 +276,8 @@ const ColorlibStepIconRoot = styled("div")<{
   isApproved: number;
 }>(({ theme, ownerState, isApproved }) => {
   return {
-    backgroundColor: theme.palette.mode === "dark" ? theme.palette.grey[700] : "#ccc",
+    backgroundColor:
+      theme.palette.mode === "dark" ? theme.palette.grey[700] : "#ccc",
     zIndex: 1,
     color: "#fff",
     width: 64,
@@ -258,13 +288,17 @@ const ColorlibStepIconRoot = styled("div")<{
     alignItems: "center",
     ...(ownerState.active && {
       backgroundColor: `${
-        isApproved >= 0 ? theme.palette.success.light : theme.palette.error.light
+        isApproved >= 0
+          ? theme.palette.success.light
+          : theme.palette.error.light
       }`,
       boxShadow: "0 4px 10px 0 rgba(0,0,0,.25)",
     }),
     ...(ownerState.completed && {
       backgroundColor: `${
-        isApproved >= 0 ? theme.palette.success.light : theme.palette.error.light
+        isApproved >= 0
+          ? theme.palette.success.light
+          : theme.palette.error.light
       }`,
       boxShadow: "0 4px 10px 0 rgba(0,0,0,.25)",
     }),

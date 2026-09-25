@@ -1,10 +1,10 @@
+import { notify } from "@/components/snackbar/notify";
 import { Box, TextField } from "@mui/material";
 
-import { openConfirmDialog, startLoading, stopLoading } from "@/components/popup/hooks";
+import { startLoading, stopLoading } from "@/components/popup/hooks";
 import { TitleText } from "@/components/basics";
 import { SubmitButton } from "@/components/basics/styled-button";
 import * as api from "@/api/actions";
-import * as constants from "@/utils/constants";
 import * as utilities from "@/utils/utilities";
 import { useNavigate } from "react-router";
 
@@ -21,20 +21,14 @@ export default function RegisterPanel() {
     const password = data.get("password")?.toString().trim();
     const passwordCheck = data.get("passwordCheck")?.toString().trim();
     if (Number.isNaN(sid) || !Number.isInteger(sid) || sid <= 0) {
-      openConfirmDialog(
-        constants.DialogTitle.Info,
-        "학번의 형식이 잘못되었습니다."
-      );
+      notify("학번의 형식이 잘못되었습니다.", "info");
       return;
     }
     if (!name || !sid || !email || !id || !password || !passwordCheck) {
       return;
     }
     if (password != passwordCheck) {
-      openConfirmDialog(
-        constants.DialogTitle.Info,
-        "비밀번호 확인을 잘못 입력하셨습니다."
-      );
+      notify("비밀번호 확인을 잘못 입력하셨습니다.", "info");
       return;
     }
     startLoading("회원가입 중입니다...");
@@ -47,13 +41,8 @@ export default function RegisterPanel() {
         password: utilities.hashSha3(password),
       });
       stopLoading();
-      openConfirmDialog(
-        constants.DialogTitle.Info,
-        "회원가입 성공!",
-        () => {
-          navigate("/");
-        }
-      );
+      notify("회원가입 성공!", "success");
+      navigate("/");
     } catch (err) {
       console.error(err);
     }

@@ -1,3 +1,6 @@
+import { notify } from "@/components/snackbar/notify";
+import { useLoadError } from "@/hooks/use-load-error";
+import { LoadError } from "@/components/load-error";
 import { styled } from "@mui/material/styles";
 import { Permission } from "@/features/auth/token";
 import { Box, TextField } from "@mui/material";
@@ -30,74 +33,83 @@ export default function AccountTab() {
 }
 
 function ChangeEmail() {
+  const { loadError, trackLoad } = useLoadError();
+
   const [email, setEmail] = useState<string | null>(null);
   const [errorText, setErrorText] = useState<string | null>(null);
 
   useEffect(() => {
-    api
-      .getMyPrivateInfo()
+    trackLoad(api.getMyPrivateInfo({ silent: true }))
       .then((result) => {
         setEmail(result.private.email!);
       })
       .catch(() => {
         /* Api already displayed the error. */
       });
-  }, []);
+  }, [trackLoad]);
 
   return (
-    <Box
-      component="form"
-      onSubmit={(event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        setErrorText(null);
-        const data = new FormData(event.currentTarget);
-        const newEmail = data.get("email")?.toString();
-        if (email === null || !newEmail) {
-          return;
-        }
-        if (email == newEmail) {
-          setErrorText("이건 당신이 이미 쓰고 계시는 이메일입니다.");
-          return;
-        }
-        if (!utilities.validateEmail(newEmail)) {
-          setErrorText("유효하지 않은 이메일입니다!");
-          return;
-        }
-        startLoading("잠시만 기다려주세요...");
-        api
-          .putMyEmail({ oldEmail: email, newEmail: newEmail })
-          .then((result) => {
-            stopLoading();
-            setEmail(result.newEmail);
-          })
-          .catch(() => {
-            /* Api already displayed the error. */
-          });
-      }}
-    >
-      <AccountFields>
-        <Box sx={{ width: "100%", justifyContent: "left" }}>
-          <Text variant="h5">이메일 변경</Text>
-        </Box>
-        {email !== null && (
-          <TextField
-            size="small"
-            label="이메일"
-            type="email"
-            autoComplete="email"
-            name="email"
-            error={Boolean(errorText)}
-            helperText={errorText}
-            defaultValue={email}
-            fullWidth
-            required
-          />
-        )}
-        <SubmitButton backgroundColor="primary.main" width="192px" height="48px">
-          변경
-        </SubmitButton>
-      </AccountFields>
-    </Box>
+    <>
+      <LoadError message={loadError} />
+      <Box
+        component="form"
+        onSubmit={(event: React.FormEvent<HTMLFormElement>) => {
+          event.preventDefault();
+          setErrorText(null);
+          const data = new FormData(event.currentTarget);
+          const newEmail = data.get("email")?.toString();
+          if (email === null || !newEmail) {
+            return;
+          }
+          if (email == newEmail) {
+            setErrorText("이건 당신이 이미 쓰고 계시는 이메일입니다.");
+            return;
+          }
+          if (!utilities.validateEmail(newEmail)) {
+            setErrorText("유효하지 않은 이메일입니다!");
+            return;
+          }
+          startLoading("잠시만 기다려주세요...");
+          api
+            .putMyEmail({ oldEmail: email, newEmail: newEmail })
+            .then((result) => {
+              stopLoading();
+              setEmail(result.newEmail);
+              notify("이메일이 변경되었습니다.", "success");
+            })
+            .catch(() => {
+              /* Api already displayed the error. */
+            });
+        }}
+      >
+        <AccountFields>
+          <Box sx={{ width: "100%", justifyContent: "left" }}>
+            <Text variant="h5">이메일 변경</Text>
+          </Box>
+          {email !== null && (
+            <TextField
+              size="small"
+              label="이메일"
+              type="email"
+              autoComplete="email"
+              name="email"
+              error={Boolean(errorText)}
+              helperText={errorText}
+              defaultValue={email}
+              fullWidth
+              required
+            />
+          )}
+          <SubmitButton
+            backgroundColor="primary.main"
+            width="192px"
+            height="48px"
+          >
+            변경
+          </SubmitButton>
+        </AccountFields>
+      </Box>
+    </>
   );
 }
 
@@ -129,6 +141,7 @@ function ChangePassword() {
           })
           .then((result) => {
             stopLoading();
+            notify("비밀번호가 변경되었습니다.", "success");
             window.location.reload();
           })
           .catch(() => {
@@ -171,7 +184,11 @@ function ChangePassword() {
           fullWidth
           required
         />
-        <SubmitButton backgroundColor="primary.main" width="192px" height="48px">
+        <SubmitButton
+          backgroundColor="primary.main"
+          width="192px"
+          height="48px"
+        >
           변경
         </SubmitButton>
       </AccountFields>

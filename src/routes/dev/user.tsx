@@ -1,8 +1,16 @@
+import { useLoadError } from "@/hooks/use-load-error";
+import { LoadError } from "@/components/load-error";
 import { PageSurface } from "@/components/layout/page-surface";
 
 import { Permission } from "@/features/auth/token";
 import type * as apiTypes from "@/api/types";
-import { Box, Checkbox, FormControlLabel, Grid, TextField } from "@mui/material";
+import {
+  Box,
+  Checkbox,
+  FormControlLabel,
+  Grid,
+  TextField,
+} from "@mui/material";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 import { startLoading, stopLoading } from "@/components/popup/hooks";
@@ -15,60 +23,66 @@ type UserBoxProps = {
 };
 
 function UserBox(props: UserBoxProps) {
+  const { loadError, trackLoad } = useLoadError();
+
   const { user, setUsers } = props;
   return (
-    <Grid size={3}>
-      <FormControlLabel
-        label={user.name}
-        control={
-          <Checkbox
-            color="secondary"
-            onChange={(event) => {
-              if (event.target.checked) {
-                startLoading("처리 중입니다...");
-                api
-                  .deleteAccount({
-                    name: user.name,
-                  })
-                  .then((result) => {
-                    stopLoading();
-                    api
-                      .getSpecialroomStudentInfo()
-                      .then((result) => {
-                        setUsers(result.studentInfo);
-                      })
-                      .catch(() => {
-                        /* Api already displayed the error. */
-                      });
-                  })
-                  .catch(() => {
-                    /* Api already displayed the error. */
-                  });
-              }
-            }}
-          />
-        }
-      />
-    </Grid>
+    <>
+      <LoadError message={loadError} />
+      <Grid size={3}>
+        <FormControlLabel
+          label={user.name}
+          control={
+            <Checkbox
+              color="secondary"
+              onChange={(event) => {
+                if (event.target.checked) {
+                  startLoading("처리 중입니다...");
+                  api
+                    .deleteAccount({
+                      name: user.name,
+                    })
+                    .then((result) => {
+                      stopLoading();
+                      trackLoad(api.getSpecialroomStudentInfo({ silent: true }))
+                        .then((result) => {
+                          setUsers(result.studentInfo);
+                        })
+                        .catch(() => {
+                          /* Api already displayed the error. */
+                        });
+                    })
+                    .catch(() => {
+                      /* Api already displayed the error. */
+                    });
+                }
+              }}
+            />
+          }
+        />
+      </Grid>
+    </>
   );
 }
 
 export default function UserManagementScreen() {
+  const { loadError, trackLoad } = useLoadError();
+
   const [users, setUsers] = useState<apiTypes.UserInfo[]>([]);
 
   useEffect(() => {
-    api
-      .getSpecialroomStudentInfo()
+    trackLoad(api.getSpecialroomStudentInfo({ silent: true }))
       .then((result) => {
         setUsers(result.studentInfo);
       })
       .catch(() => {
         /* Api already displayed the error. */
       });
-  }, []);
+  }, [trackLoad]);
 
   return (
     <>
+      <LoadError message={loadError} />
       <PageSurface maxWidth="md">
         <Box component="form" sx={{ padding: "50px 30px 30px 30px" }}>
           <TitleText>유저 관리</TitleText>
@@ -76,7 +90,9 @@ export default function UserManagementScreen() {
             <TextField label="이름" name="name" />
             <Grid container spacing={2}>
               {users.map((user) => {
-                return <UserBox key={user.name} user={user} setUsers={setUsers} />;
+                return (
+                  <UserBox key={user.name} user={user} setUsers={setUsers} />
+                );
               })}
             </Grid>
           </Box>

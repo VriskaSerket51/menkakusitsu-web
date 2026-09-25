@@ -41,7 +41,6 @@ import type {
   PasswordUpdated,
   PostApplyRequest,
   PostBbsCommentRequest,
-  PostPushRequest,
   PostRefreshRequest,
   PostRegisterRequest,
   PurposeInfoSuccess,
@@ -427,17 +426,6 @@ export const putTimetable = (
       options);
     }
 
-export const postPush = (
-    postPushRequest: PostPushRequest,
- options?: SecondParameter<typeof apiHttp<Success>>,) => {
-      return apiHttp<Success>(
-      {url: `/v1/user/push`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: postPushRequest
-    },
-      options);
-    }
-
 export const putPush = (
     putPushRequest: PutPushRequest,
  options?: SecondParameter<typeof apiHttp<Success>>,) => {
@@ -526,7 +514,6 @@ export type GetStudentInfoResult = NonNullable<Awaited<ReturnType<typeof getStud
 export type GetTeacherInfoResult = NonNullable<Awaited<ReturnType<typeof getTeacherInfo>>>
 export type GetTimetableResult = NonNullable<Awaited<ReturnType<typeof getTimetable>>>
 export type PutTimetableResult = NonNullable<Awaited<ReturnType<typeof putTimetable>>>
-export type PostPushResult = NonNullable<Awaited<ReturnType<typeof postPush>>>
 export type PutPushResult = NonNullable<Awaited<ReturnType<typeof putPush>>>
 export type DeletePushResult = NonNullable<Awaited<ReturnType<typeof deletePush>>>
 export type GetMyPrivateInfoResult = NonNullable<Awaited<ReturnType<typeof getMyPrivateInfo>>>

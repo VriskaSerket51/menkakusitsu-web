@@ -1,3 +1,6 @@
+import { notify } from "@/components/snackbar/notify";
+import { useLoadError } from "@/hooks/use-load-error";
+import { LoadError } from "@/components/load-error";
 import { getServiceDate } from "@/utils/service-date";
 import type * as apiTypes from "@/api/types";
 import {
@@ -34,19 +37,30 @@ type TimetableProps = {
 };
 
 export function TimetablePanel(props: TimetableProps) {
+  const { loadError, trackLoad } = useLoadError();
+
   const [timetable, setTimetable] = useState<apiTypes.Timetable | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const tableCellSx: SxProps<Theme> = { fontSize: "16px" };
 
   useEffect(() => {
-    api.getTimetable({
-      when: getServiceDate(),
-    }).then((result) => {
-      setTimetable(result.timetable);
-      setIsLoading(false);
-    }).catch(() => { setIsLoading(false); });
-  }, []);
+    trackLoad(
+      api.getTimetable(
+        {
+          when: getServiceDate(),
+        },
+        { silent: true },
+      ),
+    )
+      .then((result) => {
+        setTimetable(result.timetable);
+        setIsLoading(false);
+      })
+      .catch(() => {
+        setIsLoading(false);
+      });
+  }, [trackLoad]);
 
   const onPutTimetable = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -59,87 +73,95 @@ export function TimetablePanel(props: TimetableProps) {
       }
       timetableCells.push({ key: key, value: value.toString() });
     }
-    api.putTimetable({
-      timetableInfo: timetableCells,
-      when: getServiceDate(),
-    }).then((result) => {
-      console.log("fin");
-    }).catch(() => { setIsLoading(false); });
+    api
+      .putTimetable({
+        timetableInfo: timetableCells,
+        when: getServiceDate(),
+      })
+      .then((result) => {
+        notify("시간표가 저장되었습니다.", "success");
+      })
+      .catch(() => {
+        setIsLoading(false);
+      });
   };
 
   return (
-    <Box component="form" onSubmit={onPutTimetable}>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell align="center" sx={tableCellSx}></TableCell>
-              <TableCell align="center" sx={tableCellSx}>
-                1학년 1반
-              </TableCell>
-              <TableCell align="center" sx={tableCellSx}>
-                1학년 2반
-              </TableCell>
-              <TableCell align="center" sx={tableCellSx}>
-                2학년 1반
-              </TableCell>
-              <TableCell align="center" sx={tableCellSx}>
-                2학년 2반
-              </TableCell>
-              <TableCell align="center" sx={tableCellSx}>
-                3학년 1반
-              </TableCell>
-              <TableCell align="center" sx={tableCellSx}>
-                3학년 2반
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {!isLoading &&
-              timetable &&
-              timetable.timetableInfo.map((timetableCells, i) => {
-                if (i) {
-                  return (
-                    <StyledTableRow key={i}>
-                      {timetableCells.map((timetableCell, j) => {
-                        return (
-                          <TableCell
-                            key={
-                              timetableCell.key
-                                ? timetableCell.key
-                                : `nokey_${i}_${j}`
-                            }
-                            sx={tableCellSx}
-                            align="center"
-                          >
-                            {props.edit ? (
-                              <Input
-                                defaultValue={timetableCell.value}
-                                name={timetableCell.key}
-                                size="small"
-                              />
-                            ) : (
-                              timetableCell.value
-                            )}
-                          </TableCell>
-                        );
-                      })}
-                    </StyledTableRow>
-                  );
-                }
-                return <></>;
-              })}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      {props.edit && (
-        <Box sx={{ textAlign: "center", marginTop: "16px" }}>
-          <SubmitButton backgroundColor="primary.main" width="25%">
-            수정하기
-          </SubmitButton>
-        </Box>
-      )}
-    </Box>
+    <>
+      <LoadError message={loadError} />
+      <Box component="form" onSubmit={onPutTimetable}>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell align="center" sx={tableCellSx}></TableCell>
+                <TableCell align="center" sx={tableCellSx}>
+                  1학년 1반
+                </TableCell>
+                <TableCell align="center" sx={tableCellSx}>
+                  1학년 2반
+                </TableCell>
+                <TableCell align="center" sx={tableCellSx}>
+                  2학년 1반
+                </TableCell>
+                <TableCell align="center" sx={tableCellSx}>
+                  2학년 2반
+                </TableCell>
+                <TableCell align="center" sx={tableCellSx}>
+                  3학년 1반
+                </TableCell>
+                <TableCell align="center" sx={tableCellSx}>
+                  3학년 2반
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {!isLoading &&
+                timetable &&
+                timetable.timetableInfo.map((timetableCells, i) => {
+                  if (i) {
+                    return (
+                      <StyledTableRow key={i}>
+                        {timetableCells.map((timetableCell, j) => {
+                          return (
+                            <TableCell
+                              key={
+                                timetableCell.key
+                                  ? timetableCell.key
+                                  : `nokey_${i}_${j}`
+                              }
+                              sx={tableCellSx}
+                              align="center"
+                            >
+                              {props.edit ? (
+                                <Input
+                                  defaultValue={timetableCell.value}
+                                  name={timetableCell.key}
+                                  size="small"
+                                />
+                              ) : (
+                                timetableCell.value
+                              )}
+                            </TableCell>
+                          );
+                        })}
+                      </StyledTableRow>
+                    );
+                  }
+                  return <></>;
+                })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        {props.edit && (
+          <Box sx={{ textAlign: "center", marginTop: "16px" }}>
+            <SubmitButton backgroundColor="primary.main" width="25%">
+              수정하기
+            </SubmitButton>
+          </Box>
+        )}
+      </Box>
+    </>
   );
 }
 

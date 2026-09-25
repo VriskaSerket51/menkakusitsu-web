@@ -21,31 +21,42 @@ export default function RootLayout() {
   const { noHeader, noFooter } = useNavbar();
 
   const { scheme } = useColorScheme();
-  const permission = useAuth(state => state.payload.permission);
-  const allowed = useMatches().every(match => canAccessRoute({ permission }, match.handle));
+  const permission = useAuth((state) => state.payload.permission);
+  const matches = useMatches();
+  const requiresSession = matches.some(
+    ({ handle }) =>
+      !!handle &&
+      typeof handle === "object" &&
+      "permission" in handle &&
+      typeof handle.permission === "number",
+  );
+  const allowed = matches.every((match) =>
+    canAccessRoute({ permission }, match.handle),
+  );
 
   return (
     <ThemeProvider theme={getTheme(getThemeType(), scheme)}>
       <CssBaseline />
+      <ParticleComponent />
       <DialogContainer />
       <LoadingComponent />
       <SnackbarProvider
-        maxSnack={5}
-        autoHideDuration={6000}
+        maxSnack={3}
+        preventDuplicate
+        autoHideDuration={5000}
         anchorOrigin={{
           vertical: "top",
           horizontal: "right",
         }}
       >
-        <SessionBoundary>
-          <FirebaseComponent />
-          <TrackerComponent />
-          <ParticleComponent />
-          <AddonComponent type={getThemeType()} />
-          {!noHeader && <HeaderComponent />}
+        <FirebaseComponent />
+        <TrackerComponent />
+        <AddonComponent type={getThemeType()} />
+        {!noHeader && <HeaderComponent />}
+        <SessionBoundary required={requiresSession}>
           {allowed ? <Outlet /> : <Navigate to="/" replace />}
-          {!noFooter && <FooterComponent />}
         </SessionBoundary>
+        {!noFooter && <FooterComponent />}
       </SnackbarProvider>
     </ThemeProvider>
   );

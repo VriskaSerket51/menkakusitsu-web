@@ -1,3 +1,5 @@
+import { useLoadError } from "@/hooks/use-load-error";
+import { LoadError } from "@/components/load-error";
 import { PageSurface } from "@/components/layout/page-surface";
 import { PageContent } from "@/components/layout/page-layout";
 import { href } from "react-router";
@@ -24,7 +26,15 @@ import { Text, TitleText } from "@/components/basics";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import Spinner from "@/components/basics/spinner";
 
-export default function PostList({ board, postId }: { board: string; postId?: string }) {
+export default function PostList({
+  board,
+  postId,
+}: {
+  board: string;
+  postId?: string;
+}) {
+  const { loadError, trackLoad } = useLoadError();
+
   const [isLoading, setIsLoading] = useState(true);
   const [postCount, setPostCount] = useState(0);
   const [postList, setPostList] = useState<apiTypes.BbsPost[]>([]);
@@ -35,12 +45,16 @@ export default function PostList({ board, postId }: { board: string; postId?: st
 
   const refresh = useCallback(() => {
     setIsLoading(true);
-    api
-      .getBbsPostList({
-        board: board,
-        postPage: page,
-        postListSize: constants.POST_LIST_SIZE,
-      })
+    trackLoad(
+      api.getBbsPostList(
+        {
+          board: board,
+          postPage: page,
+          postListSize: constants.POST_LIST_SIZE,
+        },
+        { silent: true },
+      ),
+    )
       .then((result) => {
         setIsLoading(false);
         setPostCount(result.postCount);
@@ -49,7 +63,7 @@ export default function PostList({ board, postId }: { board: string; postId?: st
       .catch(() => {
         setIsLoading(false);
       });
-  }, [page, board]);
+  }, [page, board, trackLoad]);
 
   useEffect(() => {
     refresh();
@@ -57,6 +71,7 @@ export default function PostList({ board, postId }: { board: string; postId?: st
 
   return (
     <>
+      <LoadError message={loadError} />
       <PageSurface maxWidth="md">
         <PageContent sx={{ gap: "16px" }}>
           <TitleText color="secondary" variant="h2">
@@ -70,6 +85,7 @@ export default function PostList({ board, postId }: { board: string; postId?: st
           >
             {isLoading && <Spinner text="피드백을 불러오는 중입니다..." />}
             {!isLoading &&
+              !loadError &&
               ((postList.length > 0 &&
                 postList.map((post) => {
                   return (
@@ -78,7 +94,9 @@ export default function PostList({ board, postId }: { board: string; postId?: st
                       post={post}
                       page={page}
                       isNotice={post.postType === 0}
-                      isHighlighted={Boolean(postId) && post.id == Number(postId)}
+                      isHighlighted={
+                        Boolean(postId) && post.id == Number(postId)
+                      }
                     />
                   );
                 })) || <Typography>게시글이 없습니다.</Typography>)}
@@ -105,7 +123,10 @@ export default function PostList({ board, postId }: { board: string; postId?: st
             onChange={(event: React.ChangeEvent<unknown>, value: number) => {
               if (postId) {
                 navigate({
-                  pathname: href("/bbs/:board/:postId/view", { board: board, postId: postId }),
+                  pathname: href("/bbs/:board/:postId/view", {
+                    board: board,
+                    postId: postId,
+                  }),
                   search: `page=${value}`,
                 });
               } else {
@@ -141,7 +162,10 @@ function Article(props: ArticleProps) {
   return (
     <Link
       to={{
-        pathname: href(`/bbs/:board/:postId/view`, { board: post.board, postId: String(post.id) }),
+        pathname: href(`/bbs/:board/:postId/view`, {
+          board: post.board,
+          postId: String(post.id),
+        }),
         search: `page=${page}`,
       }}
 
@@ -171,7 +195,13 @@ function Article(props: ArticleProps) {
               color: isNotice ? "#FF4E59" : "primary.dark",
             }}
           >
-            {isNotice ? <Campaign /> : post.isPublic ? <ArticleIcon /> : <Lock />}
+            {isNotice ? (
+              <Campaign />
+            ) : post.isPublic ? (
+              <ArticleIcon />
+            ) : (
+              <Lock />
+            )}
             <Text noWrap>
               {post.header} {post.title} [{post.commentCount}]
             </Text>

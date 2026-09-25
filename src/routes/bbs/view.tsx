@@ -1,3 +1,6 @@
+import { useLoadError } from "@/hooks/use-load-error";
+import { LoadError } from "@/components/load-error";
+import { notify } from "@/components/snackbar/notify";
 import { PageSurface } from "@/components/layout/page-surface";
 
 import type { Route } from "./+types/view";
@@ -21,7 +24,6 @@ import * as api from "@/api/actions";
 import * as utilities from "@/utils/utilities";
 import * as constants from "@/utils/constants";
 import {
-  openConfirmDialog,
   openYesNoDialog,
   startLoading,
   stopLoading,
@@ -34,6 +36,8 @@ import Spinner from "@/components/basics/spinner";
 import { getSpanInfo } from "@/utils/utilities";
 
 export default function ViewScreen() {
+  const { loadError, trackLoad } = useLoadError();
+
   const { board, postId } = useParams() as Route.ComponentProps["params"];
 
   const navigate = useNavigate();
@@ -42,12 +46,18 @@ export default function ViewScreen() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [post, setPost] = useState<apiTypes.BbsPost | null>(null);
-  const [attachments, setAttachments] = useState<apiTypes.FileInfo[] | undefined>();
+  const [attachments, setAttachments] = useState<
+    apiTypes.FileInfo[] | undefined
+  >();
 
   const refresh = useCallback(() => {
     setIsLoading(true);
-    api
-      .getBbsPost({ board: board, postId: Number(postId) })
+    trackLoad(
+      api.getBbsPost(
+        { board: board, postId: Number(postId) },
+        { silent: true },
+      ),
+    )
       .then((result) => {
         setIsLoading(false);
         setPost(result.post);
@@ -56,7 +66,7 @@ export default function ViewScreen() {
       .catch(() => {
         setIsLoading(false);
       });
-  }, [board, postId]);
+  }, [board, postId, trackLoad]);
 
   useEffect(() => {
     refresh();
@@ -64,6 +74,7 @@ export default function ViewScreen() {
 
   return (
     <>
+      <LoadError message={loadError} />
       <PageSurface maxWidth="md">
         <Box
           sx={{
@@ -99,7 +110,12 @@ export default function ViewScreen() {
                       />
                     );
                   } else {
-                    return <IconLink href={attachment.downloadLink} label={attachment.fileName} />;
+                    return (
+                      <IconLink
+                        href={attachment.downloadLink}
+                        label={attachment.fileName}
+                      />
+                    );
                   }
                 })}
               <Box sx={{ display: "flex", justifyContent: "right" }}>
@@ -112,7 +128,8 @@ export default function ViewScreen() {
                   >
                     목록
                   </Button>
-                  {(uid === post.owner.uid || hasPermission({ permission }, Permission.Dev)) && (
+                  {(uid === post.owner.uid ||
+                    hasPermission({ permission }, Permission.Dev)) && (
                     <Button
                       variant="contained"
                       color="primary"
@@ -129,7 +146,8 @@ export default function ViewScreen() {
                     </Button>
                   )}
                   {post &&
-                    (uid === post.owner.uid || hasPermission({ permission }, Permission.Dev)) && (
+                    (uid === post.owner.uid ||
+                      hasPermission({ permission }, Permission.Dev)) && (
                       <Button
                         variant="contained"
                         color="error"
@@ -144,12 +162,9 @@ export default function ViewScreen() {
                                   postId: post.id,
                                 })
                                 .then((result) => {
-                                  openConfirmDialog(
-                                    constants.DialogTitle.Info,
-                                    "피드백이 삭제되었습니다.",
-                                    () => {
-                                      navigate(href("/bbs/:board/list", { board: board }));
-                                    },
+                                  notify("피드백이 삭제되었습니다.", "success");
+                                  navigate(
+                                    href("/bbs/:board/list", { board: board }),
                                   );
                                 })
                                 .catch(() => {
@@ -177,6 +192,8 @@ export default function ViewScreen() {
 export const handle = { permission: Permission.Student };
 
 function CommentSection() {
+  const { loadError, trackLoad } = useLoadError();
+
   const { board, postId } = useParams() as Route.ComponentProps["params"];
   const commentRef = useRef<HTMLTextAreaElement>(null);
 
@@ -193,13 +210,17 @@ function CommentSection() {
 
   const refresh = useCallback(() => {
     setIsLoading(true);
-    api
-      .getBbsCommentList({
-        board: board,
-        postId: Number(postId),
-        commentPage: commentPage,
-        commentListSize: constants.COMMENT_LIST_SIZE,
-      })
+    trackLoad(
+      api.getBbsCommentList(
+        {
+          board: board,
+          postId: Number(postId),
+          commentPage: commentPage,
+          commentListSize: constants.COMMENT_LIST_SIZE,
+        },
+        { silent: true },
+      ),
+    )
       .then((result) => {
         setIsLoading(false);
         setCommentCount(result.commentCount);
@@ -208,7 +229,7 @@ function CommentSection() {
       .catch(() => {
         setIsLoading(false);
       });
-  }, [commentPage, board, postId]);
+  }, [commentPage, board, postId, trackLoad]);
 
   const onPostComment = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -241,129 +262,133 @@ function CommentSection() {
   }, [refresh]);
 
   return (
-    <Box
-      component="form"
-      onSubmit={onPostComment}
-      sx={{
-        mt: "16px",
-      }}
-    >
-      <Text variant="h6">의견 {isLoading ? 0 : commentCount}개</Text>
-      <Stack
-        spacing={2}
-        direction="row"
-        sx={{
-          display: "flex",
-        }}
-      >
-        <TextField
-          name="comment"
-          inputRef={commentRef}
-          fullWidth
-          multiline
-          placeholder="댓글"
-          slotProps={{
-            htmlInput: { maxLength: 300 },
-          }}
-        />
-        <Button type="submit" variant="contained">
-          작성
-        </Button>
-      </Stack>
-      <Stack
-        spacing={2}
+    <>
+      <LoadError message={loadError} />
+      <Box
+        component="form"
+        onSubmit={onPostComment}
         sx={{
           mt: "16px",
         }}
       >
-        {isLoading && <Spinner text="댓글을 불러오는 중입니다..." />}
-        {!isLoading &&
-          commentList.map((comment) => (
-            <Box key={comment.id}>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <Grid container spacing={3}>
-                  <Grid size={8}>
-                    <Text noWrap sx={{ width: "100%" }}>
-                      {comment.owner.name}
-                    </Text>
-                  </Grid>
-                  <Grid size={4}>
-                    <Box
-                      sx={{
-                        width: "100%",
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        alignItems: "center",
-                        color: "gray",
-                      }}
-                    >
-                      <Text noWrap color="gray">
-                        {getSpanInfo(comment.createdDate)}
-                      </Text>
-                      {(uid === comment.owner.uid ||
-                        hasPermission({ permission }, Permission.Dev)) && (
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => {
-                            openYesNoDialog(
-                              constants.DialogTitle.Alert,
-                              "정말 의견을 삭제하실 건가요?",
-                              () => {
-                                api
-                                  .deleteBbsComment({
-                                    board: board,
-                                    postId: Number(postId),
-                                    commentId: comment.id,
-                                  })
-                                  .then((result) => {
-                                    openConfirmDialog(
-                                      constants.DialogTitle.Info,
-                                      "의견이 삭제되었습니다.",
-                                      () => {
-                                        refresh();
-                                      },
-                                    );
-                                  })
-                                  .catch(() => {
-                                    setIsLoading(false);
-                                  });
-                              },
-                            );
-                          }}
-                        >
-                          <Close fontSize="inherit" />
-                        </IconButton>
-                      )}
-                    </Box>
-                  </Grid>
-                </Grid>
-              </Box>
-              <Divider />
-              <Text sx={{ whiteSpace: "pre-wrap" }}>{comment.content}</Text>
-            </Box>
-          ))}
-      </Stack>
-      <Box sx={{ display: "flex", justifyContent: "center" }}>
-        <Pagination
-          count={Math.ceil(commentCount / constants.COMMENT_LIST_SIZE)}
-          page={commentPage}
-          onChange={(event: React.ChangeEvent<unknown>, value: number) => {
-            navigate({
-              pathname: href("/bbs/:board/:postId/view", { board: board, postId: postId }),
-              search: `page=${page}&commentPage=${value}`,
-            });
+        <Text variant="h6">의견 {isLoading ? 0 : commentCount}개</Text>
+        <Stack
+          spacing={2}
+          direction="row"
+          sx={{
+            display: "flex",
           }}
-          variant="outlined"
-          color="primary"
-        />
+        >
+          <TextField
+            name="comment"
+            inputRef={commentRef}
+            fullWidth
+            multiline
+            placeholder="댓글"
+            slotProps={{
+              htmlInput: { maxLength: 300 },
+            }}
+          />
+          <Button type="submit" variant="contained">
+            작성
+          </Button>
+        </Stack>
+        <Stack
+          spacing={2}
+          sx={{
+            mt: "16px",
+          }}
+        >
+          {isLoading && <Spinner text="댓글을 불러오는 중입니다..." />}
+          {!isLoading &&
+            commentList.map((comment) => (
+              <Box key={comment.id}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Grid container spacing={3}>
+                    <Grid size={8}>
+                      <Text noWrap sx={{ width: "100%" }}>
+                        {comment.owner.name}
+                      </Text>
+                    </Grid>
+                    <Grid size={4}>
+                      <Box
+                        sx={{
+                          width: "100%",
+                          display: "flex",
+                          justifyContent: "flex-end",
+                          alignItems: "center",
+                          color: "gray",
+                        }}
+                      >
+                        <Text noWrap color="gray">
+                          {getSpanInfo(comment.createdDate)}
+                        </Text>
+                        {(uid === comment.owner.uid ||
+                          hasPermission({ permission }, Permission.Dev)) && (
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() => {
+                              openYesNoDialog(
+                                constants.DialogTitle.Alert,
+                                "정말 의견을 삭제하실 건가요?",
+                                () => {
+                                  api
+                                    .deleteBbsComment({
+                                      board: board,
+                                      postId: Number(postId),
+                                      commentId: comment.id,
+                                    })
+                                    .then((result) => {
+                                      notify(
+                                        "의견이 삭제되었습니다.",
+                                        "success",
+                                      );
+                                      refresh();
+                                    })
+                                    .catch(() => {
+                                      setIsLoading(false);
+                                    });
+                                },
+                              );
+                            }}
+                          >
+                            <Close fontSize="inherit" />
+                          </IconButton>
+                        )}
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Box>
+                <Divider />
+                <Text sx={{ whiteSpace: "pre-wrap" }}>{comment.content}</Text>
+              </Box>
+            ))}
+        </Stack>
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          <Pagination
+            count={Math.ceil(commentCount / constants.COMMENT_LIST_SIZE)}
+            page={commentPage}
+            onChange={(event: React.ChangeEvent<unknown>, value: number) => {
+              navigate({
+                pathname: href("/bbs/:board/:postId/view", {
+                  board: board,
+                  postId: postId,
+                }),
+                search: `page=${page}&commentPage=${value}`,
+              });
+            }}
+            variant="outlined"
+            color="primary"
+          />
+        </Box>
       </Box>
-    </Box>
+    </>
   );
 }

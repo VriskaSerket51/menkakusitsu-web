@@ -1,3 +1,6 @@
+import { useLoadError } from "@/hooks/use-load-error";
+import { LoadError } from "@/components/load-error";
+import { notify } from "@/components/snackbar/notify";
 import { PageSurface } from "@/components/layout/page-surface";
 import { PageForm } from "@/components/layout/page-layout";
 import type { Route } from "./+types/edit";
@@ -19,14 +22,15 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 
-import { openConfirmDialog, startLoading, stopLoading } from "@/components/popup/hooks";
+import { startLoading, stopLoading } from "@/components/popup/hooks";
 import * as api from "@/api/actions";
-import * as constants from "@/utils/constants";
 import { TitleText } from "@/components/basics";
 import { SubmitButton } from "@/components/basics/styled-button";
 import { useNavigate, useParams } from "react-router";
 
 export default function EditScreen() {
+  const { loadError, trackLoad } = useLoadError();
+
   const { board, postId } = useParams() as Route.ComponentProps["params"];
   const navigate = useNavigate();
 
@@ -34,14 +38,16 @@ export default function EditScreen() {
   const [headers, setHeaders] = useState<string[]>([]);
 
   useEffect(() => {
-    startLoading("피드백을 불러오는 중입니다...");
-    api
-      .getBbsPost({ board: board, postId: Number(postId) })
+    trackLoad(
+      api.getBbsPost(
+        { board: board, postId: Number(postId) },
+        { silent: true },
+      ),
+    )
       .then((response) => {
         stopLoading();
         setPost(response.post);
-        api
-          .getBbsPostHeaders({ board: board })
+        trackLoad(api.getBbsPostHeaders({ board: board }, { silent: true }))
           .then((result) => {
             setHeaders(result.headers);
           })
@@ -52,7 +58,7 @@ export default function EditScreen() {
       .catch(() => {
         /* Api already displayed the error. */
       });
-  }, [board, navigate, postId]);
+  }, [board, navigate, postId, trackLoad]);
 
   const onPostBbsPost = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -76,9 +82,10 @@ export default function EditScreen() {
       })
       .then((result) => {
         stopLoading();
-        openConfirmDialog(constants.DialogTitle.Info, "피드백 수정이 완료되었습니다.", () => {
-          navigate(href("/bbs/:board/:postId/view", { board: board, postId: postId }));
-        });
+        notify("피드백 수정이 완료되었습니다.", "success");
+        navigate(
+          href("/bbs/:board/:postId/view", { board: board, postId: postId }),
+        );
       })
       .catch(() => {
         /* Api already displayed the error. */
@@ -87,6 +94,7 @@ export default function EditScreen() {
 
   return (
     <>
+      <LoadError message={loadError} />
       <PageSurface maxWidth="md">
         <PageForm onSubmit={onPostBbsPost} sx={{ gap: "16px" }}>
           <TitleText color="secondary" variant="h2">

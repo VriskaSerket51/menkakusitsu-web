@@ -1,3 +1,5 @@
+import { useLoadError } from "@/hooks/use-load-error";
+import { LoadError } from "@/components/load-error";
 import { Permission } from "@/features/auth/token";
 import type * as apiTypes from "@/api/types";
 import {
@@ -21,23 +23,33 @@ import { InfoTable } from "@/features/specialroom/info-panel";
 import { setFooterActive, setHeaderActive } from "@/hooks/use-navbar";
 
 export default function DownloadScreen() {
+  const { loadError, trackLoad } = useLoadError();
+
   const [attendanceInfo, setAttendanceInfo] =
     useState<apiTypes.AttendanceList | null>(null);
-  const [information, setInformation] = useState<apiTypes.SpecialroomInfo[] | null>(
-    null
-  );
+  const [information, setInformation] = useState<
+    apiTypes.SpecialroomInfo[] | null
+  >(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const when = parseInt(utilities.getParameter("when", "1"));
 
   useEffect(() => {
-    api.getAttendanceList({ when: when }).then((result) => {
-      setAttendanceInfo(result.list);
-      api.getSpecialroomInfo().then((result) => {
-        setInformation(result.information);
+    trackLoad(api.getAttendanceList({ when: when }, { silent: true }))
+      .then((result) => {
+        setAttendanceInfo(result.list);
+        trackLoad(api.getSpecialroomInfo({ silent: true }))
+          .then((result) => {
+            setInformation(result.information);
+            setIsLoading(false);
+          })
+          .catch(() => {
+            setIsLoading(false);
+          });
+      })
+      .catch(() => {
         setIsLoading(false);
-      }).catch(() => { setIsLoading(false); });
-    }).catch(() => { setIsLoading(false); });
+      });
 
     setHeaderActive(false);
     setFooterActive(false);
@@ -47,16 +59,17 @@ export default function DownloadScreen() {
       setFooterActive(true);
       setParticleActive(true);
     };
-  }, [when]);
+  }, [when, trackLoad]);
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && !loadError) {
       window.print();
     }
-  }, [isLoading]);
+  }, [isLoading, loadError]);
 
   return (
     <>
+      <LoadError message={loadError} />
       <Box
         sx={{
           width: "100%",

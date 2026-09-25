@@ -1,5 +1,7 @@
 import type * as apiTypes from "@/api/types";
 import {
+  Alert,
+  Button,
   Box,
   Divider,
   Paper,
@@ -20,6 +22,10 @@ type MealType = {
 };
 
 export default function MealInfo() {
+  const [status, setStatus] = useState<"loading" | "ready" | "error">(
+    "loading",
+  );
+  const [attempt, setAttempt] = useState(0);
   const [meal, setMeal] = useState<MealType>({
     breakfast: { meals: [] },
     lunch: { meals: [] },
@@ -28,21 +34,56 @@ export default function MealInfo() {
 
   useEffect(() => {
     const controller = new AbortController();
-    api.getMeal({ signal: controller.signal }).then((response) => {
-      setMeal({
-        breakfast: {
-          meals: response.breakfast.meals.filter((meal) => Boolean(meal)),
-        },
-        lunch: {
-          meals: response.lunch.meals.filter((meal) => Boolean(meal)),
-        },
-        dinner: {
-          meals: response.dinner.meals.filter((meal) => Boolean(meal)),
-        },
+    api
+      .getMeal({ signal: controller.signal, silent: true })
+      .then((response) => {
+        if (controller.signal.aborted) return;
+        setMeal({
+          breakfast: {
+            meals: response.breakfast.meals.filter((meal) => Boolean(meal)),
+          },
+          lunch: {
+            meals: response.lunch.meals.filter((meal) => Boolean(meal)),
+          },
+          dinner: {
+            meals: response.dinner.meals.filter((meal) => Boolean(meal)),
+          },
+        });
+        setStatus("ready");
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setStatus("error");
       });
-    }).catch(() => { /* api already displayed the error. */ });
     return () => controller.abort();
-  }, []);
+  }, [attempt]);
+
+  if (status === "error")
+    return (
+      <Alert
+        severity="error"
+        action={
+          <Button
+            color="inherit"
+            onClick={() => {
+              setStatus("loading");
+              setAttempt((value) => value + 1);
+            }}
+          >
+            다시 시도
+          </Button>
+        }
+      >
+        급식 정보를 불러오지 못했습니다.
+      </Alert>
+    );
+  if (status === "loading")
+    return (
+      <Skeleton
+        variant="rounded"
+        height={160}
+        aria-label="급식 정보를 불러오는 중입니다"
+      />
+    );
 
   const hour = dayjs().hour();
 
@@ -51,7 +92,7 @@ export default function MealInfo() {
       <Stack
         direction={{ xs: "column", sm: "row" }}
         sx={{
-          justifyContent: "space-evenly"
+          justifyContent: "space-evenly",
         }}
       >
         <MealView title="점심" meals={meal.lunch.meals} highlight={hour < 13} />
@@ -80,9 +121,11 @@ function MealView(props: MealViewProps) {
   const { title, meals, highlight } = props;
 
   return (
-    <Box sx={{
-      flex: 1
-    }}>
+    <Box
+      sx={{
+        flex: 1,
+      }}
+    >
       {highlight && (
         <Box
           sx={{
@@ -93,9 +136,11 @@ function MealView(props: MealViewProps) {
           }}
         />
       )}
-      <Box sx={{
-        padding: "32px"
-      }}>
+      <Box
+        sx={{
+          padding: "32px",
+        }}
+      >
         <Typography variant="h5">{title}</Typography>
         {meals.length > 0 ? (
           meals.map((meal) => {

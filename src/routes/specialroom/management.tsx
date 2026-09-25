@@ -1,3 +1,5 @@
+import { useLoadError } from "@/hooks/use-load-error";
+import { LoadError } from "@/components/load-error";
 import { PageSurface } from "@/components/layout/page-surface";
 import { PageContent } from "@/components/layout/page-layout";
 import { Permission } from "@/features/auth/token";
@@ -23,24 +25,30 @@ import { SpecialroomInfoPanel } from "@/features/specialroom/info-panel";
 import { useAuth } from "@/features/auth/use-auth";
 
 export default function ManagementScreen() {
-  const [information, setInformation] = useState<apiTypes.SpecialroomInfo[]>([]);
+  const { loadError, trackLoad } = useLoadError();
+
+  const [information, setInformation] = useState<apiTypes.SpecialroomInfo[]>(
+    [],
+  );
   const uid = useAuth((state) => state.payload.uid);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    api
-      .getSpecialroomInfo()
+    trackLoad(api.getSpecialroomInfo({ silent: true }))
       .then((result) => {
-        setInformation(result.information.filter((info) => info.teacher.uid == uid));
+        setInformation(
+          result.information.filter((info) => info.teacher.uid == uid),
+        );
         setIsLoading(false);
       })
       .catch(() => {
         setIsLoading(false);
       });
-  }, [uid]);
+  }, [uid, trackLoad]);
 
   return (
     <>
+      <LoadError message={loadError} />
       <PageSurface maxWidth="lg">
         <PageContent>
           <TitleText color="secondary" variant="h2">
@@ -71,7 +79,11 @@ export default function ManagementScreen() {
               {isLoading ? (
                 <CircularProgress />
               ) : (
-                <InfoCell state={0} information={information} setInformation={setInformation} />
+                <InfoCell
+                  state={0}
+                  information={information}
+                  setInformation={setInformation}
+                />
               )}
             </Box>
             <Box
@@ -87,7 +99,11 @@ export default function ManagementScreen() {
               {isLoading ? (
                 <CircularProgress />
               ) : (
-                <InfoCell state={1} information={information} setInformation={setInformation} />
+                <InfoCell
+                  state={1}
+                  information={information}
+                  setInformation={setInformation}
+                />
               )}
             </Box>
             <Box
@@ -103,7 +119,11 @@ export default function ManagementScreen() {
               {isLoading ? (
                 <CircularProgress />
               ) : (
-                <InfoCell state={-1} information={information} setInformation={setInformation} />
+                <InfoCell
+                  state={-1}
+                  information={information}
+                  setInformation={setInformation}
+                />
               )}
             </Box>
           </Stack>
@@ -116,7 +136,9 @@ export default function ManagementScreen() {
 type InfoCellProps = {
   state: number;
   information: apiTypes.SpecialroomInfo[];
-  setInformation: React.Dispatch<React.SetStateAction<apiTypes.SpecialroomInfo[]>>;
+  setInformation: React.Dispatch<
+    React.SetStateAction<apiTypes.SpecialroomInfo[]>
+  >;
 };
 
 function InfoCell(props: InfoCellProps) {
@@ -190,17 +212,23 @@ function InfoCell(props: InfoCellProps) {
                       state: 1,
                       master: {
                         ...information.master,
-                        value: information.master.value ?? information.master.name,
+                        value:
+                          information.master.value ?? information.master.name,
                       },
                       teacher: {
                         ...information.teacher,
-                        value: information.teacher.value ?? information.teacher.name,
+                        value:
+                          information.teacher.value ?? information.teacher.name,
                       },
                     })),
                   })
                   .then((result) => {
                     stopLoading();
-                    setInformation(result.information.filter((info) => info.teacher.uid == uid));
+                    setInformation(
+                      result.information.filter(
+                        (info) => info.teacher.uid == uid,
+                      ),
+                    );
                   })
                   .catch(() => {
                     /* Api already displayed the error. */
@@ -222,17 +250,23 @@ function InfoCell(props: InfoCellProps) {
                       state: -1,
                       master: {
                         ...information.master,
-                        value: information.master.value ?? information.master.name,
+                        value:
+                          information.master.value ?? information.master.name,
                       },
                       teacher: {
                         ...information.teacher,
-                        value: information.teacher.value ?? information.teacher.name,
+                        value:
+                          information.teacher.value ?? information.teacher.name,
                       },
                     })),
                   })
                   .then((result) => {
                     stopLoading();
-                    setInformation(result.information.filter((info) => info.teacher.uid == uid));
+                    setInformation(
+                      result.information.filter(
+                        (info) => info.teacher.uid == uid,
+                      ),
+                    );
                   })
                   .catch(() => {
                     /* Api already displayed the error. */

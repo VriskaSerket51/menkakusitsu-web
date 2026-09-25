@@ -1,3 +1,7 @@
+import { closeSnackbar } from "notistack";
+import { useLoadError } from "@/hooks/use-load-error";
+import { LoadError } from "@/components/load-error";
+import { notify } from "@/components/snackbar/notify";
 import { PageSurface } from "@/components/layout/page-surface";
 import { PageForm } from "@/components/layout/page-layout";
 import { getServiceDate } from "@/utils/service-date";
@@ -25,21 +29,21 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 
-import {
-  openConfirmDialog,
-  openYesNoDialog,
-  startLoading,
-  stopLoading,
-} from "@/components/popup/hooks";
+import { startLoading, stopLoading } from "@/components/popup/hooks";
 import * as api from "@/api/actions";
-import * as constants from "@/utils/constants";
 import { Text, TitleText } from "@/components/basics";
 import { SpecialroomInfoPanel } from "@/features/specialroom/info-panel";
 import { SubmitButton } from "@/components/basics/styled-button";
 
 export default function ApplyScreen() {
-  const [managerInfo, setManagerInfo] = useState<apiTypes.UserInfo | null>(null);
-  const [locationInfos, setLocationInfos] = useState<apiTypes.LocationInfo[]>([]);
+  const { loadError, trackLoad } = useLoadError();
+
+  const [managerInfo, setManagerInfo] = useState<apiTypes.UserInfo | null>(
+    null,
+  );
+  const [locationInfos, setLocationInfos] = useState<apiTypes.LocationInfo[]>(
+    [],
+  );
   const [purposeInfos, setPurposeInfos] = useState<apiTypes.PurposeInfo[]>([]);
   const [studentInfos, setStudentInfos] = useState<apiTypes.UserInfo[]>([]);
   const [teacherInfos, setTeacherInfos] = useState<apiTypes.UserInfo[]>([]);
@@ -85,10 +89,15 @@ export default function ApplyScreen() {
       title: "사용 장소 선택",
       content: (
         <>
-          <Text>신청 목적은 상관없지만 신청 장소는 바르게 선택해 주시기 바랍니다.</Text>
+          <Text>
+            신청 목적은 상관없지만 신청 장소는 바르게 선택해 주시기 바랍니다.
+          </Text>
           <FormControl>
             <FormLabel id="specialroom-location">사용 장소</FormLabel>
-            <RadioGroup aria-labelledby="specialroom-location" name="specialroom-purpose">
+            <RadioGroup
+              aria-labelledby="specialroom-location"
+              name="specialroom-purpose"
+            >
               {locationInfos.map((location) => {
                 if (location.id >= 0) {
                   return (
@@ -129,7 +138,10 @@ export default function ApplyScreen() {
         <>
           <FormControl>
             <FormLabel id="specialroom-purpose">사용 목적</FormLabel>
-            <RadioGroup aria-labelledby="specialroom-purpose" name="specialroom-purpose">
+            <RadioGroup
+              aria-labelledby="specialroom-purpose"
+              name="specialroom-purpose"
+            >
               {purposeInfos.map((purpose) => {
                 if (purpose.id >= 0) {
                   return (
@@ -230,38 +242,49 @@ export default function ApplyScreen() {
   useEffect(() => {
     // A missing daily manager must not block the other independent choices.
     void Promise.allSettled([
-      api
-        .getSpecialroomManagerInfo({ when: getServiceDate() })
-        .then((result) => setManagerInfo(result.manager)),
-      api.getSpecialroomLocationInfo().then((result) => setLocationInfos(result.locationInfo)),
-      api.getSpecialroomPurposeInfo().then((result) => setPurposeInfos(result.purposeInfo)),
-      api.getSpecialroomStudentInfo().then((result) => setStudentInfos(result.studentInfo)),
-      api.getSpecialroomTeacherInfo().then((result) => setTeacherInfos(result.teacherInfo)),
+      trackLoad(
+        api.getSpecialroomManagerInfo(
+          { when: getServiceDate() },
+          { silent: true },
+        ),
+      ).then((result) => setManagerInfo(result.manager)),
+      trackLoad(api.getSpecialroomLocationInfo({ silent: true })).then(
+        (result) => setLocationInfos(result.locationInfo),
+      ),
+      trackLoad(api.getSpecialroomPurposeInfo({ silent: true })).then(
+        (result) => setPurposeInfos(result.purposeInfo),
+      ),
+      trackLoad(api.getSpecialroomStudentInfo({ silent: true })).then(
+        (result) => setStudentInfos(result.studentInfo),
+      ),
+      trackLoad(api.getSpecialroomTeacherInfo({ silent: true })).then(
+        (result) => setTeacherInfos(result.teacherInfo),
+      ),
     ]);
-  }, []);
+  }, [trackLoad]);
 
   const onPostApply = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
     const location = data.get("location")?.toString();
     if (!location) {
-      openConfirmDialog(constants.DialogTitle.Alert, "사용 장소 선택을 하지 않으셨습니다.");
+      notify("사용 장소 선택을 하지 않으셨습니다.", "warning");
       setActiveStep(1);
       return;
     }
     const purpose = data.get("purpose")?.toString();
     if (!purpose) {
-      openConfirmDialog(constants.DialogTitle.Alert, "사용 목적 선택을 하지 않으셨습니다.");
+      notify("사용 목적 선택을 하지 않으셨습니다.", "warning");
       setActiveStep(2);
       return;
     }
     if (applicants.length === 0) {
-      openConfirmDialog(constants.DialogTitle.Alert, "학생 명단 선택을 하지 않으셨습니다.");
+      notify("학생 명단 선택을 하지 않으셨습니다.", "warning");
       setActiveStep(3);
       return;
     }
     if (!teacher) {
-      openConfirmDialog(constants.DialogTitle.Alert, "선생님 선택을 하지 않으셨습니다.");
+      notify("선생님 선택을 하지 않으셨습니다.", "warning");
       setActiveStep(4);
       return;
     }
@@ -270,31 +293,33 @@ export default function ApplyScreen() {
       .postSpecialroomApply({
         location: location,
         purpose: purpose,
-        applicants: applicants.map((user) => ({ ...user, value: user.value ?? user.name })),
+        applicants: applicants.map((user) => ({
+          ...user,
+          value: user.value ?? user.name,
+        })),
         teacherUid: teacher.uid,
         when: when,
       })
       .then((result) => {
         stopLoading();
-        openYesNoDialog(
-          constants.DialogTitle.Info,
+        notify(
           "특별실 신청에 성공했습니다. 신청 현황 페이지를 보시겠습니까?",
-          () => {
-            navigate("/specialroom/status");
+          "success",
+          {
+            action: (key) => (
+              <Button
+                color="inherit"
+                onClick={() => {
+                  closeSnackbar(key);
+                  navigate("/specialroom/status");
+                }}
+              >
+                보기
+              </Button>
+            ),
           },
         );
-        api
-          .postUserPush({
-            targetUid: teacher.uid,
-            notification: {
-              title: "학생들이 특별실을 신청했습니다.",
-              body: purpose.toString(),
-              link: `${import.meta.env.VITE_WEB_PREFIX}/specialroom/management`,
-            },
-          })
-          .catch(() => {
-            /* Api already displayed the error. */
-          });
+
       })
       .catch(() => {
         /* Api already displayed the error. */
@@ -303,6 +328,7 @@ export default function ApplyScreen() {
 
   return (
     <>
+      <LoadError message={loadError} />
       <PageSurface maxWidth="md">
         <PageForm onSubmit={onPostApply}>
           <TitleText color="secondary" variant="h2">
@@ -316,7 +342,9 @@ export default function ApplyScreen() {
                   <Step key={step.title}>
                     <StepLabel
                       optional={
-                        index === steps.length - 1 ? <Text variant="caption">Last step</Text> : null
+                        index === steps.length - 1 ? (
+                          <Text variant="caption">Last step</Text>
+                        ) : null
                       }
                     >
                       {step.title}
@@ -343,7 +371,11 @@ export default function ApplyScreen() {
                           </Button>
                         )}
 
-                        <Button disabled={index === 0} onClick={onClickBack} sx={{ mt: 1, mr: 1 }}>
+                        <Button
+                          disabled={index === 0}
+                          onClick={onClickBack}
+                          sx={{ mt: 1, mr: 1 }}
+                        >
                           뒤로가기
                         </Button>
                         <Button onClick={onClickReset} sx={{ mt: 1, mr: 1 }}>
