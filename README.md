@@ -74,3 +74,9 @@ HttpOnly는 JavaScript가 refresh token 원문을 읽는 것을 막습니다. XS
 - **src/hooks/**, **src/utils/**: 공통 훅과 저장소·날짜 등의 보조 함수. 필요한 모듈을 직접 import합니다.
 
 페이지에서 다른 라우트 모듈을 재사용하지 않고 공통 화면을 features로 추출합니다. session-boundary는 로그인 복원을 기다리고, app-layout은 공통 화면과 페이지 권한을 관리합니다. 파일은 kebab-case, React 컴포넌트는 PascalCase를 사용합니다.
+
+## 정적 자산
+
+- 브라우저 폰트는 `src/assets/fonts/web/*.woff2`와 `src/styles/fonts.css`를 사용합니다. NotoSansKR은 소스에 있는 문자를 작은 UI 묶음으로, 나머지 원본 문자는 서로 겹치지 않는 unicode-range 묶음으로 제공합니다. 사용자 이름·게시글의 문자를 제거하지 않습니다.
+- 재생성: Python 환경에 `fonttools[woff]==4.66.0`을 설치한 뒤 `python scripts/optimize-fonts.py`를 실행합니다. 보존한 원본 폰트에서 변환하고 문자 범위를 검증합니다. 앱 실행·빌드에는 Python이 필요하지 않습니다. 새 문구도 기존 나머지 묶음으로 표시되며, 재생성하면 UI 묶음에 포함됩니다.
+- 로고 원본은 `src/assets/branding/`에 보존합니다. 배포용 `public/logo192.png`·`logo512.png`는 각각 192px·512px, `logo.png`는 아바타·푸시용 512px, `icon.png`는 180px입니다. 이미지를 변경할 때는 원본에서 다시 축소합니다.
