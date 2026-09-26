@@ -7,7 +7,6 @@ import { openCancelableDialog } from "@/components/popup/hooks";
 import { SpecialroomInfoPanel } from "@/features/specialroom/info-panel";
 import MealInfo from "@/features/meal/meal-info";
 import LoginPanel from "@/features/auth/login-panel";
-import { TitleText } from "@/components/basics";
 import Logo from "@/components/basics/logo";
 import { useAuth } from "@/features/auth/use-auth";
 import { setHeaderActive } from "@/hooks/use-navbar";
@@ -51,26 +50,22 @@ function Guest() {
       </Box>
       <PageContainer maxWidth="xl">
         <Grid container spacing={3}>
-          <Grid size={8.5}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <SpecialroomInfoPanel />
           </Grid>
-          <Grid size={3.5}>
+          <Grid size={{ xs: 12, md: 4 }} sx={{ order: { xs: -1, md: 0 } }}>
             <Button
               color="primary"
               sx={{
                 width: "100%",
-                height: 60,
-                "&:hover": {
-                  backgroundColor: "#fff",
-                  color: "primary.main",
-                },
+                height: 48,
               }}
               variant="contained"
               onClick={() => {
-                openCancelableDialog("", <LoginPanel />);
+                openCancelableDialog("로그인", <LoginPanel />);
               }}
             >
-              <TitleText variant="body2">{import.meta.env.VITE_WEB_TITLE} LOGIN</TitleText>
+              {import.meta.env.VITE_WEB_TITLE || "이디저디"} LOGIN
             </Button>
           </Grid>
           <Grid size={12}>

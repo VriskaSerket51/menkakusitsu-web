@@ -63,7 +63,6 @@ export default function RegisterPanel() {
         variant="h4"
         sx={{
           mr: 2,
-          color: "inherit",
           textDecoration: "none",
         }}
       >
@@ -72,7 +71,7 @@ export default function RegisterPanel() {
       <Box
         component="form"
         onSubmit={onPostRegister}
-        sx={{ mt: 1, padding: "0 30px 0" }}
+        sx={{ mt: 1, width: "100%", maxWidth: 480 }}
       >
         <TextField
           margin="normal"
@@ -121,7 +120,7 @@ export default function RegisterPanel() {
           name="password"
           label="비밀번호"
           type="password"
-          autoComplete="current-password"
+          autoComplete="new-password"
         />
         <TextField
           margin="normal"
@@ -129,11 +128,12 @@ export default function RegisterPanel() {
           fullWidth
           size="small"
           name="passwordCheck"
+          autoComplete="new-password"
           label="비밀번호 확인"
           type="password"
         />
         <Box sx={{ marginTop: 3 }}>
-          <SubmitButton width="192px" backgroundColor="primary.main">
+          <SubmitButton width="192px" color="primary">
             가입하기
           </SubmitButton>
         </Box>

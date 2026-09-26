@@ -1,3 +1,4 @@
+import Spinner from "@/components/basics/spinner";
 import { useLoadError } from "@/hooks/use-load-error";
 import { LoadError } from "@/components/load-error";
 import { notify } from "@/components/snackbar/notify";
@@ -25,7 +26,6 @@ import { useEffect, useState } from "react";
 import { startLoading, stopLoading } from "@/components/popup/hooks";
 import * as api from "@/api/actions";
 import { TitleText } from "@/components/basics";
-import { SubmitButton } from "@/components/basics/styled-button";
 import { useNavigate, useParams } from "react-router";
 
 export default function EditScreen() {
@@ -96,22 +96,24 @@ export default function EditScreen() {
     <>
       <LoadError message={loadError} />
       <PageSurface maxWidth="md">
-        <PageForm onSubmit={onPostBbsPost} sx={{ gap: "16px" }}>
-          <TitleText color="secondary" variant="h2">
+        <PageForm onSubmit={onPostBbsPost} sx={{ gap: 3 }}>
+          <TitleText color="text.primary" variant="h2">
             피드백 수정
           </TitleText>
+          {!post && !loadError && <Spinner text="피드백을 불러오는 중입니다..." />}
           {post && (
             <>
               <Grid
                 container
                 spacing={2}
                 sx={{
+                  width: "100%",
                   display: "flex",
                   alignItems: "center",
                   flexWrap: "wrap",
                 }}
               >
-                <Grid size={10}>
+                <Grid size={{ xs: 12, sm: 9 }}>
                   <TextField
                     size="small"
                     label="제목"
@@ -124,7 +126,7 @@ export default function EditScreen() {
                     }}
                   />
                 </Grid>
-                <Grid size={2}>
+                <Grid size={{ xs: 12, sm: 3 }}>
                   <FormControl size="small" fullWidth>
                     <InputLabel id="title-header-label">말머리</InputLabel>
                     <Select
@@ -151,7 +153,8 @@ export default function EditScreen() {
                 name="content"
                 fullWidth
                 multiline
-                rows={20}
+                minRows={8}
+                maxRows={20}
                 required
                 defaultValue={post.content}
                 slotProps={{
@@ -167,20 +170,9 @@ export default function EditScreen() {
               </FormGroup>
             </>
           )}
-          {post && (
-            <SubmitButton backgroundColor="primary.main" width="192px">
-              수정하기
-            </SubmitButton>
-          )}
-          <Box sx={{ width: "100%", display: "flex", justifyContent: "right" }}>
-            <Button
-              variant="contained"
-              onClick={() => {
-                navigate(href("/bbs/:board/list", { board: board }));
-              }}
-            >
-              목록
-            </Button>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1, pt: 2, borderTop: 1, borderColor: "divider" }}>
+            <Button type="button" color="inherit" onClick={() => navigate(href("/bbs/:board/list", { board }))}>목록</Button>
+            <Button type="submit" variant="contained" disabled={!post}>수정하기</Button>
           </Box>
         </PageForm>
       </PageSurface>

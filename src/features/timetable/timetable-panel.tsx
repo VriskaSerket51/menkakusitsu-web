@@ -90,8 +90,8 @@ export function TimetablePanel(props: TimetableProps) {
     <>
       <LoadError message={loadError} />
       <Box component="form" onSubmit={onPutTimetable}>
-        <TableContainer component={Paper}>
-          <Table>
+        <TableContainer component={Paper} tabIndex={0} role="region" aria-label="시간표">
+          <Table aria-label="시간표" sx={{ minWidth: 600 }}>
             <TableHead>
               <TableRow>
                 <TableCell align="center" sx={tableCellSx}></TableCell>
@@ -155,7 +155,7 @@ export function TimetablePanel(props: TimetableProps) {
         </TableContainer>
         {props.edit && (
           <Box sx={{ textAlign: "center", marginTop: "16px" }}>
-            <SubmitButton backgroundColor="primary.main" width="25%">
+            <SubmitButton color="primary" width="25%">
               수정하기
             </SubmitButton>
           </Box>

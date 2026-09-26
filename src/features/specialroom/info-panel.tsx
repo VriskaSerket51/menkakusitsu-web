@@ -1,6 +1,8 @@
 import type * as apiTypes from "@/api/types";
 import { useEffect, useState } from "react";
 import {
+  Box,
+  Typography,
   Paper,
   Table,
   TableBody,
@@ -26,9 +28,15 @@ export function InfoTable(props: InfoTableProps) {
   const { information, isLoading, filter, error } = props;
   const visibleRows = information?.filter(row => !filter || filter(row));
 
+  if (isLoading || error || !visibleRows?.length) {
+    return <Box role={error ? "alert" : "status"} sx={{ p: 2, border: 1, borderColor: "divider", borderRadius: 1, color: error ? "error.main" : "text.secondary" }}>
+      {isLoading ? "불러오는 중입니다…" : error ?? "신청 내역이 없습니다."}
+    </Box>;
+  }
+
   return (
-    <TableContainer component={Paper}>
-      <Table aria-label="특별실 신청 명단">
+    <TableContainer component={Paper} tabIndex={0} role="region" aria-label="특별실 신청 명단" variant="outlined" elevation={0} sx={{ maxWidth: "100%", borderRadius: 1 }}>
+      <Table aria-label="특별실 신청 명단" sx={{ minWidth: 560 }}>
         <TableHead>
           <TableRow>
             <TableCell>번호</TableCell>
@@ -115,11 +123,14 @@ export function SpecialroomInfoPanel(props: SpecialroomInfoPanelProps) {
   }, []);
 
   return (
-    <InfoTable
+    <Box component="section" sx={{ minWidth: 0, width: "100%", pt: 3, borderTop: 1, borderColor: "divider" }}>
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>특별실 신청 명단</Typography>
+      <InfoTable
       information={information}
       isLoading={isLoading}
       error={error}
       filter={filter}
-    />
+      />
+    </Box>
   );
 }

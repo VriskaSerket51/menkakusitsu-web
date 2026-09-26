@@ -57,7 +57,7 @@ export const DefaultSnackbar = forwardRef(
             <Typography
               variant="body2"
               sx={{
-                color: "#fff",
+                color: "secondary.contrastText",
                 fontFamily: "BMDohyeon",
               }}
             >
@@ -73,7 +73,7 @@ export const DefaultSnackbar = forwardRef(
                 sx={{
                   padding: "8px 8px",
                   transform: "rotate(0deg)",
-                  color: "#fff",
+                  color: "secondary.contrastText",
                   transition: "all .2s",
                 }}
                 onClick={onClose}

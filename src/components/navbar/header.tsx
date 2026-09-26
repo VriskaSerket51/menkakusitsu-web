@@ -2,8 +2,13 @@ import { hasPermission } from "@/features/auth/token";
 import {
   Box,
   Button,
+  Typography,
   Menu,
   MenuItem,
+  List,
+  ListItemButton,
+  ListItemText,
+  ListSubheader,
   Paper,
   Stack,
   useTheme,
@@ -11,20 +16,29 @@ import {
   Drawer,
   IconButton,
 } from "@mui/material";
+import { alpha, type Theme } from "@mui/material/styles";
 import { useState } from "react";
-import { useNavigate } from "react-router";
-import { Menu as MenuIcon } from "@mui/icons-material";
+import { Link, useLocation, useNavigate } from "react-router";
+import { Close, Menu as MenuIcon } from "@mui/icons-material";
 
 import { AccountPanel } from "@/features/auth/account-menu";
 import { headerItems } from "@/components/navbar/items";
 import * as utilities from "@/utils/utilities";
-import { LogoText } from "@/components/basics";
 import Logo from "@/components/basics/logo";
 import { useAuth } from "@/features/auth/use-auth";
 
+const navigationStyle = (active: boolean) => (theme: Theme) => ({
+  color: active ? theme.palette.primary.main : theme.palette.text.primary,
+  backgroundColor: active ? alpha(theme.palette.primary.main, 0.08) : "transparent",
+  "&:hover": {
+    color: theme.palette.primary.main,
+    backgroundColor: alpha(theme.palette.primary.main, 0.08),
+  },
+});
+
 export function HeaderComponent() {
   const theme = useTheme();
-  const matches = useMediaQuery(theme.breakpoints.up("md"));
+  const matches = useMediaQuery(theme.breakpoints.up("lg"));
 
   return (
     <>
@@ -33,15 +47,14 @@ export function HeaderComponent() {
           bgcolor: "primary.dark",
           height: "16px"
         }} />
-      <Paper elevation={3}>
+      <Paper component="header" elevation={2}>
         <Box
           sx={{
-            bgcolor: "white",
-            height: "80px",
+            bgcolor: "background.paper",
+            height: { xs: 64, sm: 80 },
             display: "flex",
             alignItems: "center",
-            pl: 4,
-            pr: 4
+            px: { xs: 2, sm: 4 }
           }}>
           {matches ? <HeaderList /> : <HeaderDrawer />}
         </Box>
@@ -54,7 +67,7 @@ function HeaderList() {
   return (
     <Stack
       direction="row"
-      spacing={8}
+      spacing={3}
       sx={{
         flex: 1,
         alignItems: "center"
@@ -65,7 +78,6 @@ function HeaderList() {
           return (
             <HeaderMenu
               key={navbarItem.title}
-              color={navbarItem.color}
               menu={navbarItem.menu}
               title={navbarItem.title}
             />
@@ -76,7 +88,6 @@ function HeaderList() {
               key={navbarItem.title}
               permission={navbarItem.permission}
               href={navbarItem.href}
-              color={navbarItem.color}
               title={navbarItem.title}
             />
           );
@@ -96,6 +107,8 @@ function HeaderList() {
 }
 
 function HeaderDrawer() {
+  const { pathname } = useLocation();
+  const permission = useAuth(state => state.payload.permission);
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleDrawer =
@@ -113,53 +126,45 @@ function HeaderDrawer() {
 
   return (
     <>
-      <Drawer anchor="left" open={isOpen} onClose={toggleDrawer(false)}>
-        <Stack
-          spacing={4}
-          sx={{
-            flex: 1,
-            margin: "8px",
-            mt: 4
-          }}>
-          {headerItems.map((navbarItem) => {
-            if (navbarItem.menu) {
-              return (
-                <HeaderMenu
-                  key={navbarItem.title}
-                  color={navbarItem.color}
-                  menu={navbarItem.menu}
-                  title={navbarItem.title}
-                  onClick={() => setIsOpen(false)}
-                />
-              );
-            } else {
-              return (
-                <HeaderItem
-                  key={navbarItem.title}
-                  permission={navbarItem.permission}
-                  href={navbarItem.href}
-                  color={navbarItem.color}
-                  title={navbarItem.title}
-                  onClick={() => setIsOpen(false)}
-                />
-              );
-            }
+      <Drawer anchor="left" open={isOpen} onClose={toggleDrawer(false)} slotProps={{ paper: { sx: { width: 280, maxWidth: "85vw" } } }}>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
+          <IconButton aria-label="메뉴 닫기" onClick={toggleDrawer(false)}><Close /></IconButton>
+        </Box>
+        <List component="nav" aria-label="주 메뉴" sx={{ px: 1 }}>
+          {headerItems.map(group => {
+            const items: HeaderItemProps[] = group.menu ?? [group];
+            const visible = items.filter(item => hasPermission({ permission }, item.permission));
+            if (!visible.length) return null;
+            return <Box key={group.title}>
+              {group.menu && <ListSubheader component="div" disableSticky>{group.title}</ListSubheader>}
+              {visible.map(item => <ListItemButton
+                key={item.href}
+                component={Link}
+                to={item.href}
+                target={item.newTab ? "_blank" : undefined}
+                rel={item.newTab ? "noopener noreferrer" : undefined}
+                selected={pathname === item.href}
+                aria-current={pathname === item.href ? "page" : undefined}
+                onClick={() => setIsOpen(false)}
+                sx={{ borderRadius: 1, minHeight: 48 }}
+              ><ListItemText primary={item.title} /></ListItemButton>)}
+            </Box>;
           })}
-        </Stack>
+        </List>
       </Drawer>
 
       <Box
         sx={{
-          display: "flex",
+          display: "grid",
           flex: 1,
-          justifyContent: "space-between",
+          gridTemplateColumns: "44px minmax(0, 1fr) 44px",
           alignItems: "center",
         }}
       >
-        <IconButton color="inherit" onClick={toggleDrawer(true)} edge="start">
-          <MenuIcon color="primary" />
+        <IconButton aria-label="메뉴 열기" aria-expanded={isOpen} color="inherit" sx={{ color: "text.secondary", "&:hover": { color: "primary.main" } }} onClick={toggleDrawer(true)}>
+          <MenuIcon />
         </IconButton>
-        <Logo variant="h3" />
+        <Logo variant="h3" sx={{ justifySelf: "center" }} />
         <AccountPanel />
       </Box>
     </>
@@ -169,15 +174,16 @@ function HeaderDrawer() {
 type HeaderItemProps = {
   permission: number;
   href: string;
-  color?: string;
   title: string;
   newTab?: boolean;
   onClick?: VoidFunction;
 };
 
 function HeaderItem(props: HeaderItemProps) {
-  const { permission, href, color, title, newTab, onClick } = props;
+  const { permission, href, title, newTab, onClick } = props;
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const active = pathname === href || (href.endsWith("/list") && pathname.startsWith(href.slice(0, -4)));
   const userPermission = useAuth(state => state.payload.permission);
 
   if (hasPermission({ permission: userPermission }, permission)) {
@@ -188,6 +194,9 @@ function HeaderItem(props: HeaderItemProps) {
         }}
       >
         <Button
+          color="inherit"
+          aria-current={active ? "page" : undefined}
+          sx={navigationStyle(active)}
           onClick={() => {
             if (newTab) {
               utilities.openInNewTab(href);
@@ -199,9 +208,9 @@ function HeaderItem(props: HeaderItemProps) {
             }
           }}
         >
-          <LogoText color={color} variant="h4">
+          <Typography component="span" color="inherit" sx={{ fontSize: "1rem", fontWeight: 600 }}>
             {title}
-          </LogoText>
+          </Typography>
         </Button>
       </Box>
     );
@@ -212,14 +221,15 @@ function HeaderItem(props: HeaderItemProps) {
 
 type HeaderMenuProps = {
   title: string;
-  color: string;
   menu: HeaderItemProps[];
   onClick?: VoidFunction;
 };
 
 function HeaderMenu(props: HeaderMenuProps) {
-  const { title, color, menu, onClick } = props;
+  const { title, menu, onClick } = props;
 
+  const { pathname } = useLocation();
+  const active = menu.some(item => item.href === pathname);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const navigate = useNavigate();
   const userPermission = useAuth(state => state.payload.permission);
@@ -240,10 +250,10 @@ function HeaderMenu(props: HeaderMenuProps) {
         display: "inline-block",
       }}
     >
-      <Button onClick={openMenu}>
-        <LogoText color={color} variant="h4">
+      <Button color="inherit" sx={navigationStyle(active || Boolean(anchorEl))} onClick={openMenu} aria-haspopup="menu" aria-expanded={Boolean(anchorEl)}>
+        <Typography component="span" color="inherit" sx={{ fontSize: "1rem", fontWeight: 600 }}>
           {title}
-        </LogoText>
+        </Typography>
       </Button>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={closeMenu}>
         {menu.map((menu) => {
@@ -251,6 +261,8 @@ function HeaderMenu(props: HeaderMenuProps) {
             return (
               <MenuItem
                 key={menu.title}
+                selected={pathname === menu.href}
+                aria-current={pathname === menu.href ? "page" : undefined}
                 onClick={() => {
                   if (menu.newTab) {
                     utilities.openInNewTab(menu.href);

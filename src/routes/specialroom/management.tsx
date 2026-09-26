@@ -19,7 +19,6 @@ import { useState, useEffect } from "react";
 
 import { startLoading, stopLoading } from "@/components/popup/hooks";
 import * as api from "@/api/actions";
-import * as utilities from "@/utils/utilities";
 import { Text, TitleText } from "@/components/basics";
 import { SpecialroomInfoPanel } from "@/features/specialroom/info-panel";
 import { useAuth } from "@/features/auth/use-auth";
@@ -51,7 +50,7 @@ export default function ManagementScreen() {
       <LoadError message={loadError} />
       <PageSurface maxWidth="lg">
         <PageContent>
-          <TitleText color="secondary" variant="h2">
+          <TitleText color="text.primary" variant="h2">
             특별실 신청 관리
           </TitleText>
           <SpecialroomInfoPanel filter={(info) => info.teacher.uid == uid} />
@@ -69,7 +68,9 @@ export default function ManagementScreen() {
               sx={{
                 textAlign: "center",
                 p: 2,
-                border: "1px dashed grey",
+                border: "1px dashed",
+                borderColor: "divider",
+                borderRadius: 2,
                 alignItems: "center",
                 width: "100%",
               }}
@@ -90,8 +91,11 @@ export default function ManagementScreen() {
               sx={{
                 textAlign: "center",
                 p: 2,
-                border: "1px dashed grey",
-                flex: 1,
+                border: "1px dashed",
+                borderColor: "divider",
+                borderRadius: 2,
+                flex: { xs: "1 1 100%", sm: "1 1 40%" },
+                minWidth: 0,
               }}
             >
               <Text variant="h5">승인된 신청</Text>
@@ -110,8 +114,11 @@ export default function ManagementScreen() {
               sx={{
                 textAlign: "center",
                 p: 2,
-                border: "1px dashed grey",
-                flex: 1,
+                border: "1px dashed",
+                borderColor: "divider",
+                borderRadius: 2,
+                flex: { xs: "1 1 100%", sm: "1 1 40%" },
+                minWidth: 0,
               }}
             >
               <Text variant="h5">거부된 신청</Text>
@@ -146,8 +153,9 @@ function InfoCell(props: InfoCellProps) {
 
   const uid = useAuth((state) => state.payload.uid);
 
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
   let count = 0;
-  const final: apiTypes.SpecialroomInfo[] = [];
+  const final = information.filter(info => info.state === state && selectedIds.includes(info.applyId));
   const result = (
     <>
       <Stack
@@ -179,16 +187,19 @@ function InfoCell(props: InfoCellProps) {
                 arrow
               >
                 <FormControlLabel
-                  label={information.purpose}
+                  label={<Box sx={{ py: 1, overflowWrap: "anywhere" }}>
+                    <Text>{information.purpose}</Text>
+                    <Text variant="body2" color="text.secondary">{information.master.name} · {information.location} · {information.when}차 면학</Text>
+                    <Text variant="body2" color="text.secondary">{information.applicants}</Text>
+                  </Box>}
                   control={
                     <Checkbox
-                      color="secondary"
+                      color="primary"
+                      checked={selectedIds.includes(information.applyId)}
                       onChange={(event) => {
-                        if (event.target.checked) {
-                          final.push(information);
-                        } else {
-                          utilities.arrayRemove(final, information);
-                        }
+                        setSelectedIds(ids => event.target.checked
+                          ? [...ids, information.applyId]
+                          : ids.filter(id => id !== information.applyId));
                       }}
                     />
                   }
@@ -199,7 +210,7 @@ function InfoCell(props: InfoCellProps) {
         })}
       </Stack>
       <Box sx={{ textAlign: "center" }}>
-        <ButtonGroup variant="contained">
+        <ButtonGroup variant="contained" disabled={final.length === 0}>
           {state !== 1 && (
             <Button
               color="success"
@@ -224,6 +235,7 @@ function InfoCell(props: InfoCellProps) {
                   })
                   .then((result) => {
                     stopLoading();
+                    setSelectedIds([]);
                     setInformation(
                       result.information.filter(
                         (info) => info.teacher.uid == uid,
@@ -262,6 +274,7 @@ function InfoCell(props: InfoCellProps) {
                   })
                   .then((result) => {
                     stopLoading();
+                    setSelectedIds([]);
                     setInformation(
                       result.information.filter(
                         (info) => info.teacher.uid == uid,

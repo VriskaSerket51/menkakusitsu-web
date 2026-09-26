@@ -1,66 +1,43 @@
-import { Container, Divider, Stack } from "@mui/material";
-import { School, Policy, GitHub, PeopleAlt } from "@mui/icons-material";
-
-import { IconLink, IconNavLink } from "@/components/basics";
-import { InstagramLogo } from "@/components/images/instagram";
+import { Container, Divider, Link, Stack } from "@mui/material";
+import { School, Instagram, GitHub } from "@mui/icons-material";
+import { Link as RouterLink } from "react-router";
 
 export function FooterComponent() {
   return (
-    <Container maxWidth="xl" sx={{ marginBottom: "32px" }}>
-      <Stack
-        spacing={2}
-        sx={{
-          alignItems: "center",
-          justifyContent: "center"
-        }}>
-        <Divider variant="middle" flexItem />
-        <Stack
-          direction="row"
-          divider={<Divider orientation="vertical" variant="middle" flexItem />}
-          spacing={2}
-        >
-          <IconLink
-            href="http://jeju-s.jje.hs.kr/jeju-s"
-            icon={<School />}
-            label="제주과학고 공식 홈페이지"
-            newTab
-          />
-          <IconLink
-            href="https://www.instagram.com/jejuscience1999/"
-            icon={<InstagramLogo />}
-            label="제주과학고 공식 인스타그램"
-            newTab
-          />
-          <IconLink
-            href="https://www.instagram.com/jshs_bamboo/"
-            icon={<InstagramLogo />}
-            label="제주과학고 대나무숲"
-            newTab
-          />
+    <Container component="footer" maxWidth="xl" sx={{
+      mt: "auto", pt: 2, pb: 3,
+      "& a": {
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+        minHeight: 44, gap: 0.75, color: "text.secondary", fontSize: "0.875rem",
+        textAlign: "center", overflowWrap: "anywhere",
+        "&:hover": { color: "primary.main" },
+        "& svg": { fontSize: 18, flexShrink: 0 },
+      },
+    }}>
+      <Divider sx={{ mb: 2 }} />
+      <Stack spacing={0.5} sx={{ alignItems: "center" }}>
+        <Stack component="nav" aria-label="학교 관련 링크"
+          direction={{ xs: "column", md: "row" }}
+          spacing={{ xs: 0, md: 3 }} sx={{ alignItems: "center" }}>
+          <Link href="http://jeju-s.jje.hs.kr/jeju-s" target="_blank" rel="noopener noreferrer" underline="hover">
+            <School />제주과학고 공식 홈페이지
+          </Link>
+          <Link href="https://www.instagram.com/jejuscience1999/" target="_blank" rel="noopener noreferrer" underline="hover">
+            <Instagram />제주과학고 공식 인스타그램
+          </Link>
+          <Link href="https://www.instagram.com/jshs_bamboo/" target="_blank" rel="noopener noreferrer" underline="hover">
+            <Instagram />제주과학고 대나무숲
+          </Link>
         </Stack>
-        <Stack
-          direction="row"
-          divider={<Divider orientation="vertical" variant="middle" flexItem />}
-          spacing={2}
-        >
-          <IconLink
-            href="/policy.html"
-            icon={<Policy />}
-            label="개인정보처리방침"
-            newTab
-          />
-          <IconLink
-            href="https://github.com/COMMON-Jshs"
-            icon={<GitHub />}
-            label="Made by 제주과학고 정보 동아리 COMMON"
-            newTab
-          />
-          <IconNavLink
-            to="/contributors"
-            label="만든 사람들"
-            icon={<PeopleAlt />}
-          />
+        <Stack component="nav" aria-label="사이트 안내" direction="row" spacing={2} useFlexGap
+          sx={{ justifyContent: "center", flexWrap: "wrap" }}>
+          <Link href="/policy.html" target="_blank" rel="noopener noreferrer" underline="hover">개인정보처리방침</Link>
+          <Link component={RouterLink} to="/contributors" underline="hover">만든 사람들</Link>
         </Stack>
+        <Link href="https://github.com/COMMON-Jshs" target="_blank" rel="noopener noreferrer" underline="hover"
+          sx={{ "&&": { fontSize: "0.75rem" } }}>
+          <GitHub />Made by 제주과학고 정보 동아리 COMMON
+        </Link>
       </Stack>
     </Container>
   );

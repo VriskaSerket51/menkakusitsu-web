@@ -8,11 +8,11 @@ type LogoProps = BoxProps & {
 };
 
 export default function Logo(props: LogoProps) {
-  const { variant = "h4" } = props;
+  const { variant = "h4", ...boxProps } = props;
 
   return (
     <Box
-      {...props}
+      {...boxProps}
       sx={[
         ...(Array.isArray(props.sx) ? props.sx : [props.sx]),
         {
@@ -30,7 +30,7 @@ export default function Logo(props: LogoProps) {
       >
         <Link to="/" style={{ textDecoration: "none" }}>
           <LogoText color="primary" variant={variant}>
-            {import.meta.env.VITE_WEB_TITLE}
+            {import.meta.env.VITE_WEB_TITLE || "이디저디"}
           </LogoText>
           <Box
             sx={{

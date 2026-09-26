@@ -1,3 +1,4 @@
+import { getApiError } from "@/api/errors";
 import { closeSnackbar } from "notistack";
 import { useLoadError } from "@/hooks/use-load-error";
 import { LoadError } from "@/components/load-error";
@@ -8,8 +9,9 @@ import { getServiceDate } from "@/utils/service-date";
 import { Permission } from "@/features/auth/token";
 import type * as apiTypes from "@/api/types";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import {
+  Alert,
   Autocomplete,
   Box,
   Button,
@@ -33,7 +35,6 @@ import { startLoading, stopLoading } from "@/components/popup/hooks";
 import * as api from "@/api/actions";
 import { Text, TitleText } from "@/components/basics";
 import { SpecialroomInfoPanel } from "@/features/specialroom/info-panel";
-import { SubmitButton } from "@/components/basics/styled-button";
 
 export default function ApplyScreen() {
   const { loadError, trackLoad } = useLoadError();
@@ -41,6 +42,8 @@ export default function ApplyScreen() {
   const [managerInfo, setManagerInfo] = useState<apiTypes.UserInfo | null>(
     null,
   );
+  const [managerLoading, setManagerLoading] = useState(true);
+  const [managerError, setManagerError] = useState<string | null>(null);
   const [locationInfos, setLocationInfos] = useState<apiTypes.LocationInfo[]>(
     [],
   );
@@ -48,9 +51,21 @@ export default function ApplyScreen() {
   const [studentInfos, setStudentInfos] = useState<apiTypes.UserInfo[]>([]);
   const [teacherInfos, setTeacherInfos] = useState<apiTypes.UserInfo[]>([]);
 
-  const [when, setWhen] = useState(1);
+  const [searchParams] = useSearchParams();
+  const [when, setWhen] = useState(() => searchParams.get("when") === "2" ? 2 : 1);
   const [applicants, setApplicants] = useState<apiTypes.UserInfo[]>([]);
   const [teacher, setTeacher] = useState<apiTypes.UserInfo | null>(null);
+
+  const [locationId, setLocationId] = useState("");
+  const [purposeId, setPurposeId] = useState("");
+  const [customLocation, setCustomLocation] = useState("");
+  const [customPurpose, setCustomPurpose] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [conflictError, setConflictError] = useState<string | null>(null);
+  const selectedLocation = locationInfos.find(item => String(item.id) === locationId);
+  const selectedPurpose = purposeInfos.find(item => String(item.id) === purposeId);
+  const location = selectedLocation ? (selectedLocation.id < 0 ? customLocation.trim() : selectedLocation.value) : "";
+  const purpose = selectedPurpose ? (selectedPurpose.id < 0 ? customPurpose.trim() : selectedPurpose.value) : "";
 
   const [activeStep, setActiveStep] = useState(0);
 
@@ -61,12 +76,10 @@ export default function ApplyScreen() {
       title: "사용 시간 선택",
       content: (
         <>
-          <Text>
-            {dayjs().format("LL")}일의 생활 지도 선생님은 &lt;
-            {(managerInfo && managerInfo.value) || "???"}
-            &gt;이십니다.
-          </Text>
-          <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+          {managerLoading ? <Text>생활 지도 선생님 정보를 불러오는 중입니다…</Text> : managerInfo ? (
+            <Text>{dayjs().format("LL")}일의 생활 지도 선생님은 &lt;{managerInfo.value || managerInfo.name}&gt;이십니다.</Text>
+          ) : <Alert severity="info">{managerError} 신청은 계속 진행할 수 있으며, 마지막 단계에서 선생님을 직접 선택해 주세요.</Alert>}
+          <FormControl sx={{ width: "100%", maxWidth: 240 }} size="small">
             <InputLabel id="select-when">사용 시간</InputLabel>
             <Select
               labelId="select-when"
@@ -92,11 +105,14 @@ export default function ApplyScreen() {
           <Text>
             신청 목적은 상관없지만 신청 장소는 바르게 선택해 주시기 바랍니다.
           </Text>
-          <FormControl>
+          <FormControl fullWidth>
             <FormLabel id="specialroom-location">사용 장소</FormLabel>
             <RadioGroup
+              sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))" }, gap: 1, mt: 1, "& .MuiFormControlLabel-root": { m: 0, minHeight: 44, minWidth: 0 }, "& .MuiFormControlLabel-label": { minWidth: 0 }, "& .MuiTextField-root": { width: "100%" } }}
               aria-labelledby="specialroom-location"
-              name="specialroom-purpose"
+              name="location"
+              value={locationId}
+              onChange={event => setLocationId(event.target.value)}
             >
               {locationInfos.map((location) => {
                 if (location.id >= 0) {
@@ -105,7 +121,7 @@ export default function ApplyScreen() {
                       key={location.id}
                       id={`location${location.id}`}
                       name="location"
-                      value={location.value}
+                      value={String(location.id)}
                       control={<Radio />}
                       label={location.value}
                     />
@@ -114,12 +130,15 @@ export default function ApplyScreen() {
                   return (
                     <FormControlLabel
                       key={location.id}
-                      value={location.value}
+                      value={String(location.id)}
                       control={<Radio />}
                       label={
                         <TextField
+                          size="small"
                           id={`location${location.id}`}
-                          name="location"
+                          value={customLocation}
+                          onFocus={() => setLocationId(String(location.id))}
+                          onChange={event => setCustomLocation(event.target.value)}
                           label={location.value}
                         />
                       }
@@ -136,11 +155,14 @@ export default function ApplyScreen() {
       title: "사용 목적 선택",
       content: (
         <>
-          <FormControl>
+          <FormControl fullWidth>
             <FormLabel id="specialroom-purpose">사용 목적</FormLabel>
             <RadioGroup
+              sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))" }, gap: 1, mt: 1, "& .MuiFormControlLabel-root": { m: 0, minHeight: 44, minWidth: 0 }, "& .MuiFormControlLabel-label": { minWidth: 0 }, "& .MuiTextField-root": { width: "100%" } }}
               aria-labelledby="specialroom-purpose"
-              name="specialroom-purpose"
+              name="purpose"
+              value={purposeId}
+              onChange={event => setPurposeId(event.target.value)}
             >
               {purposeInfos.map((purpose) => {
                 if (purpose.id >= 0) {
@@ -149,7 +171,7 @@ export default function ApplyScreen() {
                       key={purpose.id}
                       id={`purpose${purpose.id}`}
                       name="purpose"
-                      value={purpose.value}
+                      value={String(purpose.id)}
                       control={<Radio />}
                       label={purpose.value}
                     />
@@ -158,12 +180,15 @@ export default function ApplyScreen() {
                   return (
                     <FormControlLabel
                       key={purpose.id}
-                      value={purpose.value}
+                      value={String(purpose.id)}
                       control={<Radio />}
                       label={
                         <TextField
+                          size="small"
                           id={`purpose${purpose.id}`}
-                          name="purpose"
+                          value={customPurpose}
+                          onFocus={() => setPurposeId(String(purpose.id))}
+                          onChange={event => setCustomPurpose(event.target.value)}
                           label={purpose.value}
                         />
                       }
@@ -181,20 +206,25 @@ export default function ApplyScreen() {
       content: (
         <>
           <Text>학번 혹은 이름 입력 시 자동완성이 활성화됩니다.</Text>
+          {conflictError && <Alert severity="error">{conflictError}</Alert>}
           <Autocomplete
             multiple
+            value={applicants}
+            isOptionEqualToValue={(option, value) => option.uid === value.uid}
             id="autocomplete-students"
             onChange={(event, newValue) => {
               setApplicants(newValue);
+              setConflictError(null);
             }}
             options={studentInfos}
             getOptionLabel={(option) => option.value ?? option.name}
             renderInput={(params) => (
               <TextField
                 {...params}
-                variant="standard"
+                variant="outlined"
+                size="small"
                 label="특별실 사용 학생 명단"
-                placeholder="예시) 2202 고승한"
+                placeholder={applicants.length === 0 ? "예시) 2202 고승한" : undefined}
               />
             )}
           />
@@ -208,6 +238,8 @@ export default function ApplyScreen() {
           <Text>선생님 성함 입력 시 자동완성이 활성화됩니다.</Text>
           <Autocomplete
             id="autocomplete-teachers"
+            value={teacher}
+            isOptionEqualToValue={(option, value) => option.uid === value.uid}
             onChange={(event, newValue) => {
               setTeacher(newValue);
             }}
@@ -216,7 +248,8 @@ export default function ApplyScreen() {
             renderInput={(params) => (
               <TextField
                 {...params}
-                variant="standard"
+                variant="outlined"
+                size="small"
                 label="선생님 선택"
                 placeholder="예시) 강지현(지구과학) 선생님"
               />
@@ -228,7 +261,10 @@ export default function ApplyScreen() {
   ];
 
   const onClickNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    if (activeStep === 1 && !location) { notify("사용 장소 선택을 하지 않으셨습니다.", "warning"); return; }
+    if (activeStep === 2 && !purpose) { notify("사용 목적 선택을 하지 않으셨습니다.", "warning"); return; }
+    if (activeStep === 3 && applicants.length === 0) { notify("학생 명단 선택을 하지 않으셨습니다.", "warning"); return; }
+    setActiveStep(step => Math.min(step + 1, steps.length - 1));
   };
 
   const onClickBack = () => {
@@ -242,12 +278,10 @@ export default function ApplyScreen() {
   useEffect(() => {
     // A missing daily manager must not block the other independent choices.
     void Promise.allSettled([
-      trackLoad(
-        api.getSpecialroomManagerInfo(
-          { when: getServiceDate() },
-          { silent: true },
-        ),
-      ).then((result) => setManagerInfo(result.manager)),
+      api.getSpecialroomManagerInfo({ when: getServiceDate() }, { silent: true })
+        .then(result => setManagerInfo(result.manager))
+        .catch((error: unknown) => setManagerError(getApiError(error)?.message ?? "생활 지도 선생님 정보를 불러오지 못했습니다."))
+        .finally(() => setManagerLoading(false)),
       trackLoad(api.getSpecialroomLocationInfo({ silent: true })).then(
         (result) => setLocationInfos(result.locationInfo),
       ),
@@ -265,14 +299,12 @@ export default function ApplyScreen() {
 
   const onPostApply = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const data = new FormData(e.currentTarget);
-    const location = data.get("location")?.toString();
+    if (submitting) return;
     if (!location) {
       notify("사용 장소 선택을 하지 않으셨습니다.", "warning");
       setActiveStep(1);
       return;
     }
-    const purpose = data.get("purpose")?.toString();
     if (!purpose) {
       notify("사용 목적 선택을 하지 않으셨습니다.", "warning");
       setActiveStep(2);
@@ -288,6 +320,7 @@ export default function ApplyScreen() {
       setActiveStep(4);
       return;
     }
+    setSubmitting(true);
     startLoading("특별실을 신청하는 중입니다...");
     api
       .postSpecialroomApply({
@@ -311,7 +344,7 @@ export default function ApplyScreen() {
                 color="inherit"
                 onClick={() => {
                   closeSnackbar(key);
-                  navigate("/specialroom/status");
+                  navigate(`/specialroom/status?when=${when}`);
                 }}
               >
                 보기
@@ -321,9 +354,13 @@ export default function ApplyScreen() {
         );
 
       })
-      .catch(() => {
-        /* Api already displayed the error. */
-      });
+      .catch((error: unknown) => {
+        const problem = getApiError(error);
+        if (problem?.code === "SPECIALROOM_CONFLICT") {
+          setConflictError(problem.message);
+          setActiveStep(3);
+        }
+      }).finally(() => { setSubmitting(false); stopLoading(); });
   };
 
   return (
@@ -331,12 +368,11 @@ export default function ApplyScreen() {
       <LoadError message={loadError} />
       <PageSurface maxWidth="md">
         <PageForm onSubmit={onPostApply}>
-          <TitleText color="secondary" variant="h2">
+          <TitleText color="text.primary" variant="h2">
             특별실 신청하기
           </TitleText>
-          <SpecialroomInfoPanel />
-          <Box sx={{ width: "100%", padding: "16px" }}>
-            <Stepper activeStep={activeStep} orientation="vertical">
+          <Box sx={{ width: "100%", maxWidth: 560, minWidth: 0 }}>
+            <Stepper activeStep={activeStep} orientation="vertical" sx={{ "& .MuiStepLabel-label": { fontWeight: 600 }, "& .MuiStepContent-root": { pr: 0 } }}>
               {steps.map((step, index) => {
                 return (
                   <Step key={step.title}>
@@ -356,31 +392,15 @@ export default function ApplyScreen() {
                         },
                       }}
                     >
-                      {step.content}
-                      <Box sx={{ mb: 2 }}>
-                        {index !== steps.length - 1 && (
-                          <Button
-                            variant="contained"
-                            onClick={onClickNext}
-                            sx={{
-                              mt: 1,
-                              mr: 1,
-                            }}
-                          >
-                            다음
-                          </Button>
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1, pb: 2, "& > .MuiTypography-root": { color: "text.secondary", fontSize: "0.875rem" } }}>{step.content}</Box>
+                      <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "flex-start", gap: 1, mb: 2 }}>
+                        <Button type="button" color="inherit" onClick={onClickReset}>처음으로</Button>
+                        <Button type="button" color="inherit" disabled={index === 0} onClick={onClickBack}>뒤로가기</Button>
+                        {index !== steps.length - 1 ? (
+                          <Button type="button" variant="contained" onClick={onClickNext}>다음</Button>
+                        ) : (
+                          <Button type="submit" variant="contained" loading={submitting} disabled={!teacher}>신청하기</Button>
                         )}
-
-                        <Button
-                          disabled={index === 0}
-                          onClick={onClickBack}
-                          sx={{ mt: 1, mr: 1 }}
-                        >
-                          뒤로가기
-                        </Button>
-                        <Button onClick={onClickReset} sx={{ mt: 1, mr: 1 }}>
-                          처음으로
-                        </Button>
                       </Box>
                     </StepContent>
                   </Step>
@@ -388,9 +408,7 @@ export default function ApplyScreen() {
               })}
             </Stepper>
           </Box>
-          <SubmitButton width="192px" backgroundColor="primary.main">
-            신청하기
-          </SubmitButton>
+          <SpecialroomInfoPanel />
         </PageForm>
       </PageSurface>
     </>

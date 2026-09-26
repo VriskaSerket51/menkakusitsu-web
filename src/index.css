@@ -5,3 +5,16 @@
 input[type="password"] {
   font-family: "Malgun gothic", dotum, sans-serif;
 }
+
+#root { min-height: 100dvh; display: flex; flex-direction: column; }
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 3px;
+}
+.skip-link {
+  position: fixed; left: 16px; top: 8px; z-index: 1600;
+  padding: 12px 16px; background: #fff; color: #165c14;
+  border-radius: 8px; transform: translateY(-160%);
+}
+.skip-link:focus { transform: translateY(0); }
+@media print { .skip-link { display: none; } }

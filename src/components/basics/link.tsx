@@ -27,11 +27,14 @@ export function IconLink(props: IconLinkProps) {
         sx={{
           display: "flex",
           alignItems: "center",
-          flexWrap: "wrap",
+          gap: 1,
+          minHeight: 44,
+          minWidth: 0,
+          "& > svg": { flexShrink: 0 },
           color: theme.palette.text.primary,
         }}
       >
-        {icon || <LinkIcon />} <Text variant="body1">{label}</Text>
+        {icon || <LinkIcon />} <Text variant="body1" sx={{ overflowWrap: "anywhere", minWidth: 0 }}>{label}</Text>
       </Box>
     </Link>
   );
@@ -54,14 +57,17 @@ export function IconNavLink(props: IconNavLinkProps) {
         sx={{
           display: "flex",
           alignItems: "center",
-          flexWrap: "wrap",
+          gap: 1,
+          minHeight: 44,
+          minWidth: 0,
+          "& > svg": { flexShrink: 0 },
           color: theme.palette.text.primary,
           "&:hover": {
-            textDecoration: "underline #000000",
+            textDecoration: "underline",
           },
         }}
       >
-        {icon || <LinkIcon />}  <Text variant="body1">{label}</Text>
+        {icon || <LinkIcon />}  <Text variant="body1" sx={{ overflowWrap: "anywhere", minWidth: 0 }}>{label}</Text>
       </Box>
     </NavLink>
   );

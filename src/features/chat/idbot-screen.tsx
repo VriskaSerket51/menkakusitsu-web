@@ -1,4 +1,6 @@
-import { Box, Divider, Paper, Typography } from "@mui/material";
+import { Link } from "react-router";
+import { ArrowBack } from "@mui/icons-material";
+import { Box, Divider, IconButton, Paper, Typography } from "@mui/material";
 import { useState, useEffect } from "react";
 
 import { ChatController, MuiChat } from "@/components/chat-ui-react";
@@ -78,7 +80,7 @@ export default function IdbotScreen() {
     <>
       <Box
         sx={{
-          height: "100vh",
+          height: "100dvh",
           backgroundImage:
             scheme == "light"
               ? "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)"
@@ -97,15 +99,18 @@ export default function IdbotScreen() {
           }}
           elevation={3}
         >
-          <Typography sx={{ p: 1, textAlign: "center" }}>
+          <Box sx={{ display: "flex", alignItems: "center", p: 1, gap: 1 }}>
+          <IconButton component={Link} to="/" aria-label="홈으로 돌아가기"><ArrowBack /></IconButton>
+          <Typography sx={{ flex: 1, textAlign: "center", pr: 6 }}>
             {BOT_NAME}과 소통해요 :D
           </Typography>
+          </Box>
           <Divider />
           <Box sx={{ flex: "1 1 0%", minHeight: 0 }}>
             <MuiChat
               chatController={chatCtl}
-              textInputProps={{ color: "secondary" }}
-              submitButtonProps={{ color: "secondary", variant: "contained" }}
+              textInputProps={{ color: "primary" }}
+              submitButtonProps={{ color: "primary", variant: "contained" }}
             />
           </Box>
         </Paper>

@@ -3,13 +3,12 @@ import {
   Alert,
   Button,
   Box,
-  Divider,
   Paper,
   Skeleton,
   Stack,
   Typography,
 } from "@mui/material";
-import { ReactNode, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 
 import * as api from "@/api/actions";
@@ -88,7 +87,7 @@ export default function MealInfo() {
   const hour = dayjs().hour();
 
   return (
-    <Paper>
+    <Paper sx={{ overflow: "hidden" }}>
       <Stack
         direction={{ xs: "column", sm: "row" }}
         sx={{
@@ -124,75 +123,29 @@ function MealView(props: MealViewProps) {
     <Box
       sx={{
         flex: 1,
+        minWidth: 0,
+        borderTop: "4px solid",
+        borderColor: highlight ? "primary.main" : "transparent",
       }}
     >
-      {highlight && (
-        <Box
-          sx={{
-            borderRadius: "1px",
-            borderStyle: "solid none none none",
-            borderColor: "primary.main",
-            borderWidth: "8px",
-          }}
-        />
-      )}
       <Box
         sx={{
-          padding: "32px",
+          p: { xs: 2, sm: 4 },
         }}
       >
-        <Typography variant="h5">{title}</Typography>
+        <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>{title}</Typography>
         {meals.length > 0 ? (
           meals.map((meal) => {
             return (
-              <Text key={meal} variant="h6">
+              <Text key={meal} variant="body1">
                 <div dangerouslySetInnerHTML={{ __html: `- ${meal}` }} />
               </Text>
             );
           })
         ) : (
-          <Text variant="h6">즐거운 집밥!</Text>
+          <Text variant="body1">즐거운 집밥!</Text>
         )}
       </Box>
     </Box>
   );
-}
-
-type MealProps = {
-  isHighlighted?: boolean;
-  children: ReactNode;
-};
-
-function Meal(props: MealProps) {
-  const { isHighlighted, children } = props;
-
-  if (isHighlighted) {
-    return (
-      <Box
-        sx={{
-          display: "block",
-          padding: "34px 30px 30px 30px",
-          borderRadius: "1px",
-          borderStyle: "solid none none none",
-          borderColor: "primary.main",
-          borderWidth: "8px",
-          flex: 1,
-        }}
-      >
-        {children}
-      </Box>
-    );
-  } else {
-    return (
-      <Box
-        sx={{
-          display: "block",
-          padding: "50px 30px 30px 30px",
-          flex: 1,
-        }}
-      >
-        {children}
-      </Box>
-    );
-  }
 }

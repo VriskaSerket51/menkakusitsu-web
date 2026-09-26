@@ -3,7 +3,7 @@ import { useLoadError } from "@/hooks/use-load-error";
 import { LoadError } from "@/components/load-error";
 import { styled } from "@mui/material/styles";
 import { Permission } from "@/features/auth/token";
-import { Box, TextField } from "@mui/material";
+import { Box, Divider, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 
 import { startLoading, stopLoading } from "@/components/popup/hooks";
@@ -14,19 +14,21 @@ import { SubmitButton } from "@/components/basics/styled-button";
 import { Text } from "@/components/basics";
 
 const AccountFields = styled(Box)({
-  width: "60%",
+  width: "100%",
+  maxWidth: 520,
   display: "flex",
   flexDirection: "column",
   justifyContent: "center",
-  alignItems: "center",
+  alignItems: "stretch",
   gap: "16px",
-  padding: "32px",
+  padding: "0",
 });
 
 export default function AccountTab() {
   return (
     <>
       <ChangeEmail />
+      <Divider sx={{ my: 4 }} />
       <ChangePassword />
     </>
   );
@@ -84,7 +86,7 @@ function ChangeEmail() {
       >
         <AccountFields>
           <Box sx={{ width: "100%", justifyContent: "left" }}>
-            <Text variant="h5">이메일 변경</Text>
+            <Text variant="h6" sx={{ fontWeight: 700 }}>이메일 변경</Text>
           </Box>
           {email !== null && (
             <TextField
@@ -101,7 +103,7 @@ function ChangeEmail() {
             />
           )}
           <SubmitButton
-            backgroundColor="primary.main"
+            color="primary"
             width="192px"
             height="48px"
           >
@@ -151,7 +153,7 @@ function ChangePassword() {
     >
       <AccountFields>
         <Box sx={{ width: "100%", justifyContent: "left" }}>
-          <Text variant="h5">비밀번호 변경</Text>
+          <Text variant="h6" sx={{ fontWeight: 700 }}>비밀번호 변경</Text>
         </Box>
         <TextField
           size="small"
@@ -185,7 +187,7 @@ function ChangePassword() {
           required
         />
         <SubmitButton
-          backgroundColor="primary.main"
+          color="primary"
           width="192px"
           height="48px"
         >

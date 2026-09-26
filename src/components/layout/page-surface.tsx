@@ -11,7 +11,7 @@ export function PageSurface({
 }) {
   return (
     <PageContainer maxWidth={maxWidth}>
-      <Paper>{children}</Paper>
+      <Paper sx={{ borderRadius: 3, minWidth: 0 }}>{children}</Paper>
     </PageContainer>
   );
 }

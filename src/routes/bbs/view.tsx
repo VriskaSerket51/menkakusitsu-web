@@ -1,3 +1,5 @@
+import { NoticeBadge } from "@/features/bbs/notice-badge";
+import { noticeSurface } from "@/features/bbs/notice-styles";
 import { useLoadError } from "@/hooks/use-load-error";
 import { LoadError } from "@/components/load-error";
 import { notify } from "@/components/snackbar/notify";
@@ -15,7 +17,6 @@ import {
   TextField,
   Stack,
   IconButton,
-  Grid,
 } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -78,15 +79,21 @@ export default function ViewScreen() {
       <PageSurface maxWidth="md">
         <Box
           sx={{
-            padding: "50px 30px 30px 30px",
+            p: { xs: 2, sm: 4 },
+            overflowWrap: "anywhere",
           }}
         >
           {isLoading && <Spinner text="피드백을 불러오는 중입니다..." />}
           {!isLoading && post && (
             <>
-              <Text variant="h5">
-                {post.header} {post.title}
-              </Text>
+              <Box sx={theme => ({ mb: 2, ...(post.postType === 0 ? {
+                ...noticeSurface(theme), borderWidth: 1, borderStyle: "solid", borderRadius: 2, p: 2,
+              } : {}) })}>
+                {post.postType === 0 && <NoticeBadge />}
+                <Text variant="h5" color="text.primary" sx={{ mt: post.postType === 0 ? 1 : 0 }}>
+                  {post.postType !== 0 && post.header} {post.title}
+                </Text>
+              </Box>
               <Box
                 sx={{
                   display: "flex",
@@ -121,7 +128,8 @@ export default function ViewScreen() {
               <Box sx={{ display: "flex", justifyContent: "right" }}>
                 <Stack spacing={2} direction="row">
                   <Button
-                    variant="contained"
+                    variant="text"
+                    color="inherit"
                     onClick={() => {
                       navigate(href("/bbs/:board/list", { board: board }));
                     }}
@@ -131,8 +139,8 @@ export default function ViewScreen() {
                   {(uid === post.owner.uid ||
                     hasPermission({ permission }, Permission.Dev)) && (
                     <Button
-                      variant="contained"
-                      color="primary"
+                      variant="outlined"
+                      color="inherit"
                       onClick={() => {
                         navigate(
                           href("/bbs/:board/:postId/edit", {
@@ -149,7 +157,7 @@ export default function ViewScreen() {
                     (uid === post.owner.uid ||
                       hasPermission({ permission }, Permission.Dev)) && (
                       <Button
-                        variant="contained"
+                        variant="outlined"
                         color="error"
                         onClick={() => {
                           openYesNoDialog(
@@ -289,7 +297,7 @@ function CommentSection() {
               htmlInput: { maxLength: 300 },
             }}
           />
-          <Button type="submit" variant="contained">
+          <Button type="submit" color="primary" variant="contained">
             작성
           </Button>
         </Stack>
@@ -308,63 +316,60 @@ function CommentSection() {
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
+                    gap: 1,
+                    minHeight: 44,
                   }}
                 >
-                  <Grid container spacing={3}>
-                    <Grid size={8}>
-                      <Text noWrap sx={{ width: "100%" }}>
-                        {comment.owner.name}
-                      </Text>
-                    </Grid>
-                    <Grid size={4}>
-                      <Box
-                        sx={{
-                          width: "100%",
-                          display: "flex",
-                          justifyContent: "flex-end",
-                          alignItems: "center",
-                          color: "gray",
+                  <Text noWrap sx={{ flex: 1, minWidth: 0 }}>
+                    {comment.owner.name}
+                  </Text>
+                  <Box
+                    sx={{
+                      flexShrink: 0,
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      alignItems: "center",
+                      color: "gray",
+                    }}
+                  >
+                    <Text noWrap color="gray">
+                      {getSpanInfo(comment.createdDate)}
+                    </Text>
+                    {(uid === comment.owner.uid ||
+                      hasPermission({ permission }, Permission.Dev)) && (
+                      <IconButton
+                        aria-label="댓글 삭제"
+                        size="small"
+                        color="error"
+                        onClick={() => {
+                          openYesNoDialog(
+                            constants.DialogTitle.Alert,
+                            "정말 의견을 삭제하실 건가요?",
+                            () => {
+                              api
+                                .deleteBbsComment({
+                                  board: board,
+                                  postId: Number(postId),
+                                  commentId: comment.id,
+                                })
+                                .then((result) => {
+                                  notify(
+                                    "의견이 삭제되었습니다.",
+                                    "success",
+                                  );
+                                  refresh();
+                                })
+                                .catch(() => {
+                                  setIsLoading(false);
+                                });
+                            },
+                          );
                         }}
                       >
-                        <Text noWrap color="gray">
-                          {getSpanInfo(comment.createdDate)}
-                        </Text>
-                        {(uid === comment.owner.uid ||
-                          hasPermission({ permission }, Permission.Dev)) && (
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={() => {
-                              openYesNoDialog(
-                                constants.DialogTitle.Alert,
-                                "정말 의견을 삭제하실 건가요?",
-                                () => {
-                                  api
-                                    .deleteBbsComment({
-                                      board: board,
-                                      postId: Number(postId),
-                                      commentId: comment.id,
-                                    })
-                                    .then((result) => {
-                                      notify(
-                                        "의견이 삭제되었습니다.",
-                                        "success",
-                                      );
-                                      refresh();
-                                    })
-                                    .catch(() => {
-                                      setIsLoading(false);
-                                    });
-                                },
-                              );
-                            }}
-                          >
-                            <Close fontSize="inherit" />
-                          </IconButton>
-                        )}
-                      </Box>
-                    </Grid>
-                  </Grid>
+                        <Close fontSize="inherit" />
+                      </IconButton>
+                    )}
+                  </Box>
                 </Box>
                 <Divider />
                 <Text sx={{ whiteSpace: "pre-wrap" }}>{comment.content}</Text>

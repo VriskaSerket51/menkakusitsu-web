@@ -1,10 +1,8 @@
-import { Box, Button, ButtonProps, TypographyProps } from "@mui/material";
+import { Box, Button, ButtonProps, Typography, TypographyProps } from "@mui/material";
 import { ReactNode } from "react";
 
-import { TitleText } from "@/components/basics/styled-text";
 
 type SubmitButtonProps = ButtonProps & {
-  backgroundColor: string;
   width?: string;
   height?: string;
   children?: ReactNode;
@@ -13,36 +11,35 @@ type SubmitButtonProps = ButtonProps & {
 
 export function SubmitButton(props: SubmitButtonProps) {
   const {
-    backgroundColor,
     width = "100%",
-    height = "58px",
+    height = "48px",
     children,
     sx,
     textProps,
+    type = "submit",
+    color = "primary",
+    variant = "contained",
     ...rest
   } = props;
 
   return (
-    <Box sx={{ textAlign: "center", width: "100%", height: "100%" }}>
+    <Box sx={{ textAlign: "right", width: "100%", height: "100%" }}>
       <Button
         {...rest}
-        type="submit"
-        variant="contained"
+        type={type}
+        color={color}
+        variant={variant}
         fullWidth
         sx={[
           ...(Array.isArray(sx) ? sx : [sx]),
           {
-            backgroundColor: backgroundColor,
-            "&:hover": {
-              backgroundColor: "#fff",
-              color: backgroundColor,
-            },
             height: height,
             width: width,
+            maxWidth: "100%",
           },
         ]}
       >
-        <TitleText {...textProps}>{children}</TitleText>
+        <Typography component="span" variant="inherit" {...textProps} sx={[...(Array.isArray(textProps?.sx) ? textProps.sx : [textProps?.sx]), { fontFamily: "inherit", fontSize: "inherit", fontWeight: "inherit" }]}>{children}</Typography>
       </Button>
     </Box>
   );

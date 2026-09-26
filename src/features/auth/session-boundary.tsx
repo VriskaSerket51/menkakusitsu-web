@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Alert, Button, CircularProgress } from "@mui/material";
+import { Link } from "react-router";
+import { Alert, Box, Button, CircularProgress } from "@mui/material";
 import { restoreSession } from "./session";
 
 type SessionBoundaryProps = { children: ReactNode; required?: boolean };
@@ -55,7 +56,7 @@ export function SessionBoundary({
       </>
     );
   if (status === "ready") return children;
-  if (status === "error") return retry;
+  if (status === "error") return <Box sx={{ maxWidth: 960, mx: "auto", py: 3 }}>{retry}<Button color="inherit" component={Link} to="/" sx={{ ml: 2 }}>홈으로 돌아가기</Button></Box>;
   return (
     <CircularProgress
       aria-label="Loading"

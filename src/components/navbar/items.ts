@@ -2,7 +2,6 @@ import { Permission } from "@/features/auth/token";
 
 export const headerItems = [
   {
-    color: "primary.main",
     title: "특별실",
     menu: [
       {
@@ -38,7 +37,6 @@ export const headerItems = [
     ],
   },
   {
-    color: "primary.main",
     title: "유틸리티",
     menu: [
       {
@@ -61,7 +59,6 @@ export const headerItems = [
     ],
   },
   {
-    color: "primary.main",
     title: "피드백",
     href: "/bbs/feedback/list",
     permission: Permission.Student,

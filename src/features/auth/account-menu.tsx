@@ -47,8 +47,8 @@ export function AccountPanel() {
     <>
       <Box>
         <Tooltip title="계정 설정">
-          <IconButton onClick={openMenu} size="small" sx={{ ml: 2 }}>
-            <Avatar alt={loginId} src="-" />
+          <IconButton aria-label="계정 메뉴" aria-haspopup="menu" aria-expanded={open} onClick={openMenu} size="small" sx={{ width: 44, height: 44, p: 0 }}>
+            <Avatar alt={loginId} />
           </IconButton>
         </Tooltip>
       </Box>

@@ -1,7 +1,8 @@
 import { PageSurface } from "@/components/layout/page-surface";
 import { PageContent } from "@/components/layout/page-layout";
 import { Permission } from "@/features/auth/token";
-import { List, ListItem, ListItemText } from "@mui/material";
+import { Box, List, ListItem, ListItemText } from "@mui/material";
+import { DownloadOutlined } from "@mui/icons-material";
 
 import * as utilities from "@/utils/utilities";
 import { SubmitButton } from "@/components/basics/styled-button";
@@ -19,11 +20,11 @@ export default function InfoScreen() {
   return (
     <>
       <PageSurface maxWidth="md">
-        <PageContent sx={{ gap: "16px" }}>
-          <TitleText color="secondary" variant="h2">
+        <PageContent sx={{ gap: 3 }}>
+          <TitleText color="text.primary" variant="h2">
             안내 사항
           </TitleText>
-          <List sx={{ width: "100%" }}>
+          <List sx={{ width: "100%", p: 0, "& .MuiListItem-root": { px: 0, py: 1 } }}>
             {info.map((info, index) => {
               return (
                 <ListItem key={info}>
@@ -32,9 +33,14 @@ export default function InfoScreen() {
               );
             })}
           </List>
+          <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 2, pt: 2, borderTop: 1, borderColor: "divider", "& > div": { width: { xs: "100%", sm: "auto" } } }}>
           <SubmitButton
-            backgroundColor="primary.main"
-            width="192px"
+            type="button"
+            color="primary"
+            variant="contained"
+            startIcon={<DownloadOutlined />}
+            sx={{ px: 3 }}
+            width="100%"
             onClick={() => {
               utilities.openInNewTab("./download?when=1");
             }}
@@ -44,8 +50,12 @@ export default function InfoScreen() {
           </SubmitButton>
 
           <SubmitButton
-            backgroundColor="primary.main"
-            width="192px"
+            type="button"
+            color="primary"
+            variant="contained"
+            startIcon={<DownloadOutlined />}
+            sx={{ px: 3, bgcolor: "primary.dark" }}
+            width="100%"
             onClick={() => {
               utilities.openInNewTab("./download?when=2");
             }}
@@ -53,6 +63,7 @@ export default function InfoScreen() {
           >
             2차 면학 출석부 다운로드
           </SubmitButton>
+          </Box>
         </PageContent>
       </PageSurface>
     </>

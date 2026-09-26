@@ -4,7 +4,7 @@ import { AccountBox } from "@mui/icons-material";
 import type { LoginSuccess } from "@/api/generated/models";
 
 import {
-  openCancelableDialog,
+  closeAll,
   startLoading,
   stopLoading,
 } from "@/components/popup/hooks";
@@ -13,7 +13,6 @@ import * as api from "@/api/actions";
 import * as firebase from "@/utils/firebase.client";
 import * as utilities from "@/utils/utilities";
 import { useNavigate } from "react-router";
-import RegisterPanel from "@/features/auth/register-panel";
 
 export default function LoginPanel() {
   const navigate = useNavigate();
@@ -81,13 +80,12 @@ export default function LoginPanel() {
         variant="h4"
         sx={{
           mr: 2,
-          color: "inherit",
           textDecoration: "none",
         }}
       >
         로그인하세요.
       </TitleText>
-      <Box component="form" onSubmit={onPostLogin}>
+      <Box component="form" onSubmit={onPostLogin} sx={{ width: "100%", maxWidth: 480 }}>
         <TextField
           margin="normal"
           required
@@ -96,9 +94,6 @@ export default function LoginPanel() {
           label="ID"
           name="id"
           autoComplete="username"
-          slotProps={{
-            input: { sx: { borderRadius: "50px" } },
-          }}
         />
         <TextField
           required
@@ -108,15 +103,12 @@ export default function LoginPanel() {
           type="password"
           id="password"
           autoComplete="current-password"
-          slotProps={{
-            input: { sx: { borderRadius: "50px" } },
-          }}
         />
         <SubmitButton
           fullWidth
-          backgroundColor="primary.main"
-          height="40px"
-          sx={{ mt: 3, mb: 2, borderRadius: "50px" }}
+          color="primary"
+          height="48px"
+          sx={{ mt: 3, mb: 2 }}
         >
           LOGIN
         </SubmitButton>
@@ -129,7 +121,9 @@ export default function LoginPanel() {
           }}
         >
           <Link
-            href="#"
+            color="text.secondary"
+            component="button"
+            type="button"
             onClick={() => {
               notify("현재 제공되지 않는 기능입니다.", "info");
             }}
@@ -139,8 +133,10 @@ export default function LoginPanel() {
             비밀번호를 잊어버리셨나요?
           </Link>
           <Button
+            color="inherit"
             onClick={() => {
-              openCancelableDialog("", <RegisterPanel />);
+              closeAll();
+              navigate("/auth/register");
             }}
             startIcon={<AccountBox />}
           >

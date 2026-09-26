@@ -1,3 +1,5 @@
+import { NoticeBadge } from "./notice-badge";
+import { noticeSurface } from "./notice-styles";
 import { useLoadError } from "@/hooks/use-load-error";
 import { LoadError } from "@/components/load-error";
 import { PageSurface } from "@/components/layout/page-surface";
@@ -11,11 +13,10 @@ import {
   Stack,
   Typography,
   useTheme,
-  darken,
-  lighten,
+  alpha,
   Grid,
 } from "@mui/material";
-import { Article as ArticleIcon, Campaign, Lock } from "@mui/icons-material";
+import { Article as ArticleIcon, Lock } from "@mui/icons-material";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 
@@ -23,7 +24,6 @@ import * as api from "@/api/actions";
 import * as constants from "@/utils/constants";
 import * as utilities from "@/utils/utilities";
 import { Text, TitleText } from "@/components/basics";
-import { useColorScheme } from "@/hooks/use-color-scheme";
 import Spinner from "@/components/basics/spinner";
 
 export default function PostList({
@@ -73,8 +73,8 @@ export default function PostList({
     <>
       <LoadError message={loadError} />
       <PageSurface maxWidth="md">
-        <PageContent sx={{ gap: "16px" }}>
-          <TitleText color="secondary" variant="h2">
+        <PageContent sx={{ gap: 3 }}>
+          <TitleText color="text.primary" variant="h2">
             피드백
           </TitleText>
           <Stack
@@ -114,10 +114,12 @@ export default function PostList({
                 navigate(href("/bbs/:board/create", { board: board }));
               }}
             >
-              <Text variant="body1">피드백하기</Text>
+              피드백하기
             </Button>
           </Box>
           <Pagination
+            sx={{ alignSelf: "center" }}
+            siblingCount={0}
             count={Math.ceil(postCount / constants.POST_LIST_SIZE)}
             page={page}
             onChange={(event: React.ChangeEvent<unknown>, value: number) => {
@@ -130,7 +132,6 @@ export default function PostList({
                   search: `page=${value}`,
                 });
               } else {
-                navigate(href(`/bbs/:board/create`, { board: board }));
                 navigate({
                   pathname: href("/bbs/:board/list", { board: board }),
                   search: `page=${value}`,
@@ -157,7 +158,6 @@ function Article(props: ArticleProps) {
   const { post, isNotice, isHighlighted, page } = props;
 
   const theme = useTheme();
-  const { scheme } = useColorScheme();
 
   return (
     <Link
@@ -173,48 +173,53 @@ function Article(props: ArticleProps) {
         justifyContent: "space-between",
         alignItems: "center",
         textDecoration: "none",
-        padding: "4px",
-        backgroundColor: isHighlighted
-          ? scheme == "light"
-            ? darken(theme.palette.background.paper, 0.2)
-            : lighten(theme.palette.background.paper, 0.2)
-          : undefined,
+        padding: "12px",
+        borderRadius: 8,
+        border: `1px solid ${theme.palette.divider}`,
+        ...(isNotice ? noticeSurface(theme) : {}),
+        ...(isHighlighted ? {
+          outline: "2px solid " + theme.palette.primary.main,
+          outlineOffset: 2,
+          ...(!isNotice ? { backgroundColor: alpha(theme.palette.primary.main, 0.06) } : {}),
+        } : {}),
       }}
       onClick={() => {
         window.scrollTo(0, 0);
       }}
     >
-      <Grid container spacing={3}>
-        <Grid size={8.5}>
+      <Grid container spacing={1}>
+        <Grid size={{ xs: 12, sm: 8 }} sx={{ minWidth: 0 }}>
           <Box
             sx={{
               width: "100%",
               display: "flex",
               justifyContent: "flex-start",
               alignItems: "center",
-              color: isNotice ? "#FF4E59" : "primary.dark",
+              color: "text.primary",
+              gap: 1,
+              "& > svg": { flexShrink: 0 },
             }}
           >
             {isNotice ? (
-              <Campaign />
+              <NoticeBadge />
             ) : post.isPublic ? (
-              <ArticleIcon />
+              <ArticleIcon color="secondary" />
             ) : (
-              <Lock />
+              <Lock color="secondary" />
             )}
             <Text noWrap>
-              {post.header} {post.title} [{post.commentCount}]
+              {!isNotice && post.header} {post.title} [{post.commentCount}]
             </Text>
           </Box>
         </Grid>
-        <Grid size={3.5}>
+        <Grid size={{ xs: 12, sm: 4 }}>
           <Box
             sx={{
               width: "100%",
               display: "flex",
               justifyContent: "flex-end",
               alignItems: "center",
-              color: "gray",
+              color: "text.secondary",
             }}
           >
             <Text noWrap>{post.owner.name}</Text>

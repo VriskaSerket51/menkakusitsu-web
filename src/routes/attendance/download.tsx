@@ -4,6 +4,8 @@ import { Permission } from "@/features/auth/token";
 import type * as apiTypes from "@/api/types";
 import {
   Box,
+  Button,
+  Stack,
   Paper,
   styled,
   Table,
@@ -13,6 +15,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import { Link } from "react-router";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 
@@ -69,6 +72,10 @@ export default function DownloadScreen() {
 
   return (
     <>
+      <Stack direction="row" spacing={2} sx={{ p: 2, "@media print": { display: "none" } }}>
+        <Button color="inherit" component={Link} to="/attendance/info">돌아가기</Button>
+        <Button color="primary" variant="contained" onClick={() => window.print()} disabled={isLoading || Boolean(loadError)}>인쇄</Button>
+      </Stack>
       <LoadError message={loadError} />
       <Box
         sx={{

@@ -1,6 +1,6 @@
 import { NavigationProgress } from "@/components/layout/navigation-progress";
 import { SessionBoundary } from "@/features/auth/session-boundary";
-import { CssBaseline, ThemeProvider } from "@mui/material";
+import { Box, CssBaseline, ThemeProvider } from "@mui/material";
 import { useAuth } from "@/features/auth/use-auth";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { canAccessRoute } from "@/features/auth/token";
@@ -54,10 +54,13 @@ export default function RootLayout() {
         <FirebaseComponent />
         <TrackerComponent />
         <AddonComponent type={getThemeType()} />
+        <Box component="a" href="#main-content" className="skip-link">본문으로 건너뛰기</Box>
         {!noHeader && <HeaderComponent />}
+        <Box component="main" id="main-content" tabIndex={-1} sx={{ flex: 1, minWidth: 0 }}>
         <SessionBoundary required={requiresSession}>
           {allowed ? <Outlet /> : <Navigate to="/" replace />}
         </SessionBoundary>
+        </Box>
         {!noFooter && <FooterComponent />}
       </SnackbarProvider>
     </ThemeProvider>

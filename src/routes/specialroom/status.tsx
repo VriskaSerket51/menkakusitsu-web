@@ -1,5 +1,5 @@
 import { PageSurface } from "@/components/layout/page-surface";
-import { PageForm } from "@/components/layout/page-layout";
+import { PageContent } from "@/components/layout/page-layout";
 import { Permission } from "@/features/auth/token";
 import type * as apiTypes from "@/api/types";
 import {
@@ -14,13 +14,11 @@ import {
   Step,
   Stepper,
   Typography,
-  StepConnector,
-  stepConnectorClasses,
   StepLabel,
-  StepIconProps,
 } from "@mui/material";
-import { CheckCircle, GroupAdd, HourglassTop } from "@mui/icons-material";
-import { styled } from "@mui/material/styles";
+import { Link, useSearchParams } from "react-router";
+import { EventNote, GroupAdd } from "@mui/icons-material";
+import { alpha } from "@mui/material/styles";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
@@ -31,7 +29,6 @@ import {
 import * as api from "@/api/actions";
 import * as constants from "@/utils/constants";
 import { TitleText } from "@/components/basics";
-import { SubmitButton } from "@/components/basics/styled-button";
 import { SpecialroomInfoPanel } from "@/features/specialroom/info-panel";
 
 const steps = ["신청 완료", "승인 대기 중", "승인 완료"];
@@ -43,7 +40,8 @@ export default function StatusScreen() {
   const [loadFailed, setLoadFailed] = useState(false);
   const activeRequest = useRef<AbortController | null>(null);
 
-  const [when, setWhen] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const when = searchParams.get("when") === "2" ? 2 : 1;
 
   const refresh = useCallback(() => {
     activeRequest.current?.abort();
@@ -108,21 +106,23 @@ export default function StatusScreen() {
   return (
     <>
       <PageSurface maxWidth="md">
-        <PageForm>
-          <TitleText color="secondary" variant="h2">
+        <PageContent>
+          <TitleText color="text.primary" variant="h2">
             특별실 신청 현황
           </TitleText>
           <Box
             sx={{
               width: "100%",
-              padding: "64px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
             }}
           >
-            <Typography variant="h5">몇 차 면학으로 신청하셨나요?</Typography>
+            <Typography variant="body1" sx={{ fontWeight: 600 }}>몇 차 면학으로 신청하셨나요?</Typography>
             <FormControl
               sx={{
-                m: 1,
-                minWidth: 120,
+                width: "100%",
+                maxWidth: 240,
               }}
               size="small"
             >
@@ -133,7 +133,10 @@ export default function StatusScreen() {
                 value={when}
                 label="사용 시간"
                 onChange={(event) => {
-                  setWhen(Number(event.target.value));
+                  setSearchParams(previous => {
+                    previous.set("when", String(event.target.value));
+                    return previous;
+                  }, { replace: true });
                 }}
               >
                 <MenuItem value={1}>1차 면학</MenuItem>
@@ -146,45 +149,52 @@ export default function StatusScreen() {
                   <Typography color="error">
                     신청 정보를 불러오지 못했습니다.
                   </Typography>
-                  <Button onClick={refresh}>다시 시도</Button>
+                  <Button color="inherit" onClick={refresh}>다시 시도</Button>
                 </Box>
               ) : !isLoading ? (
                 applyStatus ? (
-                  <Typography
-                    noWrap
-                    variant="h6"
-                    sx={{
-                      mr: 2,
-                      color: "inherit",
-                      textDecoration: "none",
-                    }}
-                  >
-                    선생님: {applyStatus.teacher.name}
-                    <br />
-                    신청자: {applyStatus.master.name}
-                    <br />
-                    장소: {applyStatus.location}
-                    <br />
-                    목적: {applyStatus.purpose}
-                    {applyStatus.state === -1 && " - 거부됨"}
-                    <br />
-                    명단: {applyStatus.applicants} - 총
-                    {applyStatus.applicants.split(",").length}
-                    인
-                    <br />
-                    활동 시간: {applyStatus.when}차 면학
-                  </Typography>
+                  <Box component="dl" sx={{ m: 0, p: 2, border: 1, borderColor: "divider", borderRadius: 1, display: "grid", gridTemplateColumns: "auto minmax(0, 1fr)", columnGap: 3, rowGap: 2 }}>
+                    {[
+                      ["선생님", applyStatus.teacher.name],
+                      ["신청자", applyStatus.master.name],
+                      ["장소", applyStatus.location],
+                      ["목적", applyStatus.purpose + (applyStatus.state === -1 ? " - 거부됨" : "")],
+                      ["명단", applyStatus.applicants + " - 총" + applyStatus.applicants.split(",").length + "인"],
+                      ["활동 시간", applyStatus.when + "차 면학"],
+                    ].map(([label, value]) => <Box key={label} sx={{ display: "contents" }}>
+                      <Typography component="dt" variant="body2" color="text.secondary">{label}</Typography>
+                      <Typography component="dd" variant="body2" sx={{ m: 0, overflowWrap: "anywhere" }}>{value}</Typography>
+                    </Box>)}
+                  </Box>
                 ) : (
-                  <Typography
-                    noWrap
+                  <Stack
+                    role="status"
                     sx={{
-                      mr: 2,
-                      color: "inherit",
-                      textDecoration: "none",
+                      display: "grid",
+                      gridTemplateColumns: { xs: "48px minmax(0, 1fr)", sm: "48px minmax(0, 1fr) auto" },
+                      alignItems: "center",
+                      textAlign: "left",
+                      gap: 2,
+                      "& > *": { margin: "0 !important" },
+                      "& > .MuiButton-root": { gridColumn: { xs: "1 / -1", sm: "auto" } },
+                      py: 2,
+                      px: 2,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      borderRadius: 1,
                     }}
                   >
-                    신청 안 함
-                  </Typography>
+                    <Box sx={{ display: "grid", placeItems: "center", width: 48, height: 48, borderRadius: "50%", bgcolor: theme => alpha(theme.palette.secondary.main, 0.1), color: "secondary.main" }}>
+                      <EventNote sx={{ fontSize: 24 }} />
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>{when}차 면학</Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 600 }}>신청 안 함</Typography>
+                    </Box>
+                    <Button component={Link} to={`/specialroom/apply?when=${when}`} variant="contained" disableElevation startIcon={<GroupAdd />}>
+                      특별실 신청하기
+                    </Button>
+                  </Stack>
                 )
               ) : (
                 <Box sx={{ textAlign: "center" }}>
@@ -193,139 +203,26 @@ export default function StatusScreen() {
               )}
             </Box>
           </Box>
-          <Stack sx={{ width: "100%", paddingBottom: "32px" }} spacing={4}>
-            <Stepper
-              alternativeLabel
-              activeStep={isLoading || loadFailed ? -1 : activeStep}
-              connector={
-                <ColorlibConnector
-                  isapproved={applyStatus ? applyStatus.state : 0}
-                />
-              }
-            >
-              {steps.map((label, index) => (
-                <Step key={label}>
-                  <StepLabel
-                    slots={{
-                      stepIcon: ColorlibStepIcon,
-                    }}
-                    slotProps={{
-                      stepIcon: {
-                        icon: index + 1,
-                        isApproved: applyStatus ? applyStatus.state : 0,
-                      } as ColorlibStepIconProps,
-                    }}
-                  >
-                    {label}
-                  </StepLabel>
-                </Step>
-              ))}
-            </Stepper>
-            {!isLoading && !loadFailed && applyStatus && (
-              <SubmitButton
-                width="192px"
-                backgroundColor="error.main"
-                onClick={onCancelApply}
-              >
-                신청 취소
-              </SubmitButton>
-            )}
-          </Stack>
+          {!isLoading && !loadFailed && applyStatus && (
+            <Stack spacing={3}>
+              <Stepper alternativeLabel activeStep={activeStep}>
+                {steps.map((label, index) => (
+                  <Step key={label} completed={applyStatus.state === 1 || index < activeStep}>
+                    <StepLabel error={applyStatus.state === -1 && index === 2}>
+                      {applyStatus.state === -1 && index === 2 ? "거부됨" : label}
+                    </StepLabel>
+                  </Step>
+                ))}
+              </Stepper>
+              <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                <Button type="button" variant="outlined" color="error" onClick={onCancelApply}>신청 취소</Button>
+              </Box>
+            </Stack>
+          )}
           <SpecialroomInfoPanel />
-        </PageForm>
+        </PageContent>
       </PageSurface>
     </>
-  );
-}
-
-const ColorlibConnector = styled(StepConnector)<{ isapproved: number }>(
-  ({ theme, isapproved }) => ({
-    [`&.${stepConnectorClasses.alternativeLabel}`]: {
-      top: 27,
-    },
-    [`&.${stepConnectorClasses.active}`]: {
-      [`& .${stepConnectorClasses.line}`]: {
-        backgroundColor: `${
-          isapproved >= 0
-            ? theme.palette.success.light
-            : theme.palette.error.light
-        }`,
-      },
-    },
-    [`&.${stepConnectorClasses.completed}`]: {
-      [`& .${stepConnectorClasses.line}`]: {
-        backgroundColor: `${
-          isapproved >= 0
-            ? theme.palette.success.light
-            : theme.palette.error.light
-        }`,
-      },
-    },
-    [`& .${stepConnectorClasses.line}`]: {
-      height: 10,
-      border: 0,
-      backgroundColor:
-        theme.palette.mode === "dark" ? theme.palette.grey[800] : "#eaeaf0",
-      borderRadius: 1,
-    },
-  }),
-);
-
-const ColorlibStepIconRoot = styled("div")<{
-  ownerState: { completed?: boolean; active?: boolean };
-  isApproved: number;
-}>(({ theme, ownerState, isApproved }) => {
-  return {
-    backgroundColor:
-      theme.palette.mode === "dark" ? theme.palette.grey[700] : "#ccc",
-    zIndex: 1,
-    color: "#fff",
-    width: 64,
-    height: 64,
-    display: "flex",
-    borderRadius: "50%",
-    justifyContent: "center",
-    alignItems: "center",
-    ...(ownerState.active && {
-      backgroundColor: `${
-        isApproved >= 0
-          ? theme.palette.success.light
-          : theme.palette.error.light
-      }`,
-      boxShadow: "0 4px 10px 0 rgba(0,0,0,.25)",
-    }),
-    ...(ownerState.completed && {
-      backgroundColor: `${
-        isApproved >= 0
-          ? theme.palette.success.light
-          : theme.palette.error.light
-      }`,
-      boxShadow: "0 4px 10px 0 rgba(0,0,0,.25)",
-    }),
-  };
-});
-
-type ColorlibStepIconProps = StepIconProps & {
-  isApproved?: number;
-};
-
-function ColorlibStepIcon(props: ColorlibStepIconProps) {
-  const { active, completed, className, isApproved = 0 } = props;
-
-  const icons: { [index: string]: React.ReactElement } = {
-    1: <GroupAdd />,
-    2: <HourglassTop />,
-    3: <CheckCircle />,
-  };
-
-  return (
-    <ColorlibStepIconRoot
-      ownerState={{ completed, active }}
-      className={className}
-      isApproved={isApproved}
-    >
-      {icons[String(props.icon)]}
-    </ColorlibStepIconRoot>
   );
 }
 

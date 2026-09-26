@@ -1,8 +1,9 @@
+import { Link } from "react-router";
 import { PageSurface } from "@/components/layout/page-surface";
 import { PageContent } from "@/components/layout/page-layout";
 import { Permission } from "@/features/auth/token";
-import { Box, Stack } from "@mui/material";
-import { GitHub } from "@mui/icons-material";
+import { Box, Button, Stack } from "@mui/material";
+import { ArrowBack, GitHub } from "@mui/icons-material";
 import { useEffect } from "react";
 
 import { contributors } from "@/features/contributors/members";
@@ -40,7 +41,10 @@ export default function ContributorsScreen() {
 
       <PageSurface maxWidth="md">
         <PageContent sx={{ gap: "16px" }}>
-          <TitleText color="secondary" variant="h2">
+          <Button color="inherit" component={Link} to="/" startIcon={<ArrowBack />} sx={{ alignSelf: "flex-start" }}>
+            홈으로 돌아가기
+          </Button>
+          <TitleText color="text.primary" variant="h2">
             만든 사람들
           </TitleText>
           <Stack
@@ -56,15 +60,24 @@ export default function ContributorsScreen() {
                   key={contributor.name}
                   sx={{
                     display: "flex",
-                    flexWrap: "wrap",
+                    gap: 2,
+                    width: "100%",
+                    p: { xs: 2, sm: 3 },
+                    border: "1px solid",
+                    borderColor: "divider",
+                    borderRadius: 2,
+                    flexDirection: { xs: "column", sm: "row" },
                   }}
                 >
                   <img
                     src={contributor.profile}
+                    alt={`${contributor.name} 프로필`}
+                    loading="lazy"
                     style={{
                       width: "96px",
                       height: "96px",
-                      marginRight: "1em",
+                      borderRadius: "16px",
+                      objectFit: "cover",
                     }}
                   />
                   <Box
@@ -72,11 +85,13 @@ export default function ContributorsScreen() {
                       display: "flex",
                       flexDirection: "column",
                       whiteSpace: "pre-wrap",
+                      minWidth: 0,
+                      overflowWrap: "anywhere",
                       gap: "4px",
                     }}
                   >
                     <Box>
-                      <Box sx={{ display: "flex" }}>
+                      <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 1 }}>
                         <Text variant="h5">{contributor.name}</Text>
                         <Text variant="h6">{`(${contributor.period})`}</Text>
                       </Box>
