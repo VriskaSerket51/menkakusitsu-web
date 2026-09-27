@@ -11,7 +11,7 @@ import { useNavigate } from "react-router";
 export default function RegisterPanel() {
   const navigate = useNavigate();
 
-  const onPostRegister = async (event: React.FormEvent<HTMLFormElement>) => {
+  const onPostRegister = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const name = data.get("name")?.toString().trim();

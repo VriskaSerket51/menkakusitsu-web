@@ -14,11 +14,7 @@ export function MuiMessage({
   showDate: boolean;
   showTime: boolean;
 }): React.ReactElement {
-  if (message.deletedAt) {
-    return <div id={id} />;
-  }
-
-  const dispDate = message.updatedAt ? message.updatedAt : message.createdAt;
+  const dispDate = message.createdAt;
 
   const chatAvatar = (
     <Box

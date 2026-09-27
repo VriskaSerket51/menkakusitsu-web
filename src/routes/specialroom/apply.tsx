@@ -297,7 +297,7 @@ export default function ApplyScreen() {
     ]);
   }, [trackLoad]);
 
-  const onPostApply = (e: React.FormEvent<HTMLFormElement>) => {
+  const onPostApply = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (submitting) return;
     if (!location) {

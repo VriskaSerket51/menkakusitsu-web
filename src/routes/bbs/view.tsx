@@ -239,7 +239,7 @@ function CommentSection() {
       });
   }, [commentPage, board, postId, trackLoad]);
 
-  const onPostComment = (event: React.FormEvent<HTMLFormElement>) => {
+  const onPostComment = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const comment = data.get("comment")?.toString();

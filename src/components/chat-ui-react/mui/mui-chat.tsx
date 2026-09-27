@@ -3,21 +3,9 @@ import dayjs from "dayjs";
 import React from "react";
 
 import { ChatController } from "../chat-controller";
-import {
-  ActionRequest,
-  AudioActionRequest,
-  CustomActionRequest,
-  FileActionRequest,
-  MultiSelectActionRequest,
-  SelectActionRequest,
-  TextActionRequest,
-} from "../chat-types";
+import type { TextActionRequest } from "../chat-types";
 
-import { MuiAudioInput } from "./mui-audio-input";
-import { MuiFileInput } from "./mui-file-input";
 import { MuiMessage } from "./mui-message";
-import { MuiMultiSelectInput } from "./mui-multi-select-input";
-import { MuiSelectInput } from "./mui-select-input";
 import { MuiTextInput } from "./mui-text-input";
 
 export function MuiChat({
@@ -37,7 +25,6 @@ export function MuiChat({
   const scroll = React.useCallback((): void => {
     if (msgRef.current) {
       msgRef.current.scrollTop = msgRef.current.scrollHeight;
-      // msgRef.current.scrollIntoView(true);
     }
   }, [msgRef]);
   React.useEffect(() => {
@@ -56,18 +43,6 @@ export function MuiChat({
       chatCtl.removeOnActionChanged(handleActionChanged);
     };
   }, [chatCtl, scroll]);
-
-  type CustomComponentType = React.FC<{
-    chatController: ChatController;
-    actionRequest: ActionRequest;
-  }>;
-  const CustomComponent = React.useMemo((): CustomComponentType => {
-    if (!actReq || actReq.type !== "custom") {
-      return null as unknown as CustomComponentType;
-    }
-    return (actReq as CustomActionRequest)
-      .Component as unknown as CustomComponentType;
-  }, [actReq]);
 
   const unknownMsg = {
     type: "text",
@@ -111,9 +86,9 @@ export function MuiChat({
         {messages.map((msg): React.ReactElement => {
           let showDate = false;
           let showTime = !!chatCtl.getOption().showDateTime;
-          if (!!chatCtl.getOption().showDateTime && !msg.deletedAt) {
+          if (chatCtl.getOption().showDateTime) {
             const current = dayjs(
-              msg.updatedAt ? msg.updatedAt : msg.createdAt
+              msg.createdAt
             );
 
             if (current.format("YYYYMMDD") !== prevDate.format("YYYYMMDD")) {
@@ -167,36 +142,7 @@ export function MuiChat({
             buttonProps={submitButtonProps}
           />
         )}
-        {actReq && actReq.type === "select" && (
-          <MuiSelectInput
-            chatController={chatCtl}
-            actionRequest={actReq as SelectActionRequest}
-          />
-        )}
-        {actReq && actReq.type === "multi-select" && (
-          <MuiMultiSelectInput
-            chatController={chatCtl}
-            actionRequest={actReq as MultiSelectActionRequest}
-          />
-        )}
-        {actReq && actReq.type === "file" && (
-          <MuiFileInput
-            chatController={chatCtl}
-            actionRequest={actReq as FileActionRequest}
-          />
-        )}
-        {actReq && actReq.type === "audio" && (
-          <MuiAudioInput
-            chatController={chatCtl}
-            actionRequest={actReq as AudioActionRequest}
-          />
-        )}
-        {actReq && actReq.type === "custom" && (
-          <CustomComponent
-            chatController={chatCtl}
-            actionRequest={actReq as CustomActionRequest}
-          />
-        )}
+
       </Box>
     </Box>
   );

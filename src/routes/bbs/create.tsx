@@ -58,7 +58,7 @@ export default function CreateScreen() {
       });
   }, [board, trackLoad]);
 
-  const onPostBbsPost = (e: React.FormEvent<HTMLFormElement>) => {
+  const onPostBbsPost = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
     const title = data.get("title")?.toString();

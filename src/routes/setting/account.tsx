@@ -55,7 +55,7 @@ function ChangeEmail() {
       <LoadError message={loadError} />
       <Box
         component="form"
-        onSubmit={(event: React.FormEvent<HTMLFormElement>) => {
+        onSubmit={(event: React.SubmitEvent<HTMLFormElement>) => {
           event.preventDefault();
           setErrorText(null);
           const data = new FormData(event.currentTarget);
@@ -121,7 +121,7 @@ function ChangePassword() {
   return (
     <Box
       component="form"
-      onSubmit={(event: React.FormEvent<HTMLFormElement>) => {
+      onSubmit={(event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
         setErrorText(null);
         const data = new FormData(event.currentTarget);

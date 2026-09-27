@@ -13,14 +13,13 @@ interface ChatState {
   option: ChatOption;
   messages: Message<MessageContent>[];
   action: Action;
-  actionHistory: Action[];
   onMessagesChanged: OnMessagesChanged[];
   onActionChanged: OnActionChanged[];
 }
 
 interface Action {
   request: ActionRequest;
-  responses: ActionResponse[];
+  hasResponded: boolean;
   responseHandlers: OnActionResponse[];
 }
 
@@ -33,7 +32,7 @@ export class ChatController {
 
   private emptyAction: Action = {
     request: { type: 'empty' },
-    responses: [],
+    hasResponded: false,
     responseHandlers: [],
   };
 
@@ -47,7 +46,6 @@ export class ChatController {
       option: { ...this.defaultOption, ...option },
       messages: [],
       action: this.emptyAction,
-      actionHistory: [],
       onMessagesChanged: [],
       onActionChanged: [],
     };
@@ -64,22 +62,6 @@ export class ChatController {
         resolve(idx);
       }, this.state.option.delay);
     });
-  }
-
-  updateMessage(index: number, message: Message<MessageContent>): void {
-    if (message !== this.state.messages[index]) {
-      const { createdAt } = this.state.messages[index];
-      this.state.messages[index] = message;
-      this.state.messages[index].createdAt = createdAt;
-    }
-
-    this.state.messages[index].updatedAt = new Date();
-    this.callOnMessagesChanged();
-  }
-
-  removeMessage(index: number): void {
-    this.state.messages[index].deletedAt = new Date();
-    this.callOnMessagesChanged();
   }
 
   getMessages(): Message<MessageContent>[] {
@@ -116,7 +98,7 @@ export class ChatController {
   ): Promise<ActionResponse> {
     const action: Action = {
       request: { ...this.defaultActionRequest, ...request },
-      responses: [],
+      hasResponded: false,
       responseHandlers: [],
     };
 
@@ -138,7 +120,6 @@ export class ChatController {
       }
 
       this.state.action = action;
-      this.state.actionHistory.push(action);
       this.callOnActionChanged(action.request);
 
       if (request.always) {
@@ -153,8 +134,8 @@ export class ChatController {
   }
 
   getActionRequest(): ActionRequest | undefined {
-    const { request, responses } = this.state.action;
-    if (!request.always && responses.length > 0) {
+    const { request, hasResponded } = this.state.action;
+    if (!request.always && hasResponded) {
       return undefined;
     }
 
@@ -165,7 +146,7 @@ export class ChatController {
     request: ActionRequest,
     response: ActionResponse,
   ): Promise<void> {
-    const { request: origReq, responses, responseHandlers } = this.state.action;
+    const { request: origReq, responseHandlers } = this.state.action;
     if (request !== origReq) {
       throw new Error('Invalid action.');
     }
@@ -173,7 +154,7 @@ export class ChatController {
       throw new Error('Response handlers are not set.');
     }
 
-    responses.push(response);
+    this.state.action.hasResponded = true;
     this.callOnActionChanged(request, response);
 
     if (request.addMessage) {
@@ -185,10 +166,6 @@ export class ChatController {
     }
 
     responseHandlers.map((h) => h(response));
-  }
-
-  getActionResponses(): ActionResponse[] {
-    return this.state.action.responses;
   }
 
   private callOnActionChanged(
@@ -204,7 +181,7 @@ export class ChatController {
 
   removeOnActionChanged(callback: OnActionChanged): void {
     const idx = this.state.onActionChanged.indexOf(callback);
-    this.state.onActionChanged[idx] = (): void => {};
+    if (idx !== -1) this.state.onActionChanged.splice(idx, 1);
   }
 
   getOption(): ChatOption {

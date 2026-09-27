@@ -13,5 +13,5 @@ export interface BbsPostUploadRequest {
      * One or more files in repeated data fields; maximum 50 MiB per file.
      * @minItems 1
      */
-  data?: Blob[];
+  data?: (Blob | File)[];
 }

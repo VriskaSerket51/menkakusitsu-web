@@ -62,7 +62,7 @@ export function TimetablePanel(props: TimetableProps) {
       });
   }, [trackLoad]);
 
-  const onPutTimetable = (event: React.FormEvent<HTMLFormElement>) => {
+  const onPutTimetable = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const timetableCells: apiTypes.TimetableCell[] = [];
