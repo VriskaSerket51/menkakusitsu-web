@@ -90,7 +90,7 @@ Firebase Analytics와 푸시는 개발 모드와 로컬 주소(localhost, 루프
 ### Firebase 로그 검증
 
 - 페이지 조회는 앱이 수동으로 전송합니다. GA 관리 → 데이터 스트림 → 웹 스트림 → 향상된 측정 → 페이지 조회에서 **브라우저 방문 기록 변경 기반 페이지 변경**을 비활성화하세요. 초기 자동 조회는 코드의 send_page_view: false로 차단합니다. 콘솔 설정을 변경하지 않으면 SPA 조회가 중복될 수 있습니다.
-- DebugView에서 홈 → 신청 → 현황 → 뒤로 이동 시 page_view가 각각 한 번인지 확인합니다. 쿼리/해시만 바뀌면 새 조회를 보내지 않습니다. 동적 게시판·글 ID와 알 수 없는 경로는 정규화하며 입력 내용, JWT, 푸시 토큰은 보내지 않습니다.
+- DebugView에서 홈 → 신청 → 현황 → 뒤로 이동 시 page_view가 각각 한 번인지 확인합니다. 쿼리/해시만 바뀌면 새 조회를 보내지 않습니다. 페이지 이름과 경로는 React Router의 라우트 ID에서 자동 생성합니다(예: specialroom/status, bbs/view). 별도 제목표는 없으며 새 라우트도 자동 추적됩니다. 실제 URL의 게시판·글 ID, 알 수 없는 경로, 입력 내용, JWT, 푸시 토큰은 보내지 않습니다.
 - app_action: action/outcome/failure_kind/duration_ms. 로그인·가입·신청·취소·신청 관리·글/댓글 작성·푸시 서버 등록/삭제 결과를 기록합니다. 보고서에 쓰려면 해당 이벤트 매개변수의 맞춤 정의를 GA에 등록하세요.
 - app_push: registered/unregistered/foreground_received/foreground_opened 단계. 백그라운드 수신·클릭 전체를 측정하는 지표가 아닙니다.
 - app_firebase_error: stage/failure_kind만 기록합니다. Analytics 자체 초기화 실패 또는 수집 차단은 Analytics로 보고할 수 없으므로 정제된 브라우저 콘솔 경고만 남습니다.

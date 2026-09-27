@@ -1,15 +1,22 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createPageTracker, pageDetails, measureAction, failureKind } from '../src/utils/telemetry.ts';
-test('page events have absolute sanitized URLs, meaningful titles and one event per transition', () => {
+test('route IDs automatically identify pages without exposing URL parameters', () => {
  const track=createPageTracker();
- assert.equal(track('https://example.com','/').page_title,'홈');
- assert.equal(track('https://example.com','/'),null);
- const next=track('https://example.com','/bbs/private-user/123/view');
- assert.equal(next.page_location,'https://example.com/bbs/board/post/view');
- assert.equal(next.page_referrer,'https://example.com/');
- assert.equal(track('https://example.com','/').page_referrer,next.page_location);
- assert.equal(pageDetails('https://example.com','/secret-email').page_path,'/not-found');
+ const origin='https://example.com';
+ assert.equal(track(origin,'/','routes/home').page_title,'home');
+ assert.equal(track(origin,'/','routes/home'),null);
+ const next=track(origin,'/bbs/private-user/123/view','routes/bbs/view');
+ assert.equal(next.page_location,origin+'/bbs/view');
+ assert.equal(next.page_referrer,origin+'/home');
+ assert.equal(next.page_title,'bbs/view');
+ assert.equal(track(origin,'/bbs/private-user/456/view','routes/bbs/view').page_title,'bbs/view');
+ assert.equal(track(origin,'/','routes/home').page_referrer,next.page_location);
+ assert.equal(pageDetails(origin,'routes/new-feature').page_title,'new-feature');
+ const missing=track(origin,'/secret-email','routes/not-found');
+ assert.equal(missing.page_path,'/not-found');
+ assert.equal(JSON.stringify(missing).includes('secret-email'),false);
+ assert.equal(pageDetails(origin).page_path,'/unknown');
 });
 test('actions preserve results and failures even if telemetry fails; cancellation is not a failure event', async () => {
  const events=[];

@@ -1,14 +1,16 @@
 import { useEffect } from "react";
-import { useLocation } from "react-router";
+import { useLocation, useMatches } from "react-router";
 
 import { logPageView } from "@/utils/firebase.client";
 
 export function TrackerComponent() {
   const { pathname } = useLocation();
+  const matches = useMatches();
+  const routeId = matches[matches.length - 1]?.id;
 
   useEffect(() => {
-    logPageView();
-  }, [pathname]);
+    if (routeId) logPageView(pathname, routeId);
+  }, [pathname, routeId]);
 
   return <></>;
 }

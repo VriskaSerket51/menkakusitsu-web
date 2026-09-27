@@ -37,7 +37,7 @@ if (firebaseEnabled) {
   try {
     analytics = initializeAnalytics(app, { config: {
       send_page_view: false,
-      ...pageDetails(window.location.origin, window.location.pathname),
+      ...pageDetails(window.location.origin),
       page_referrer: "",
     } });
   } catch (error) {
@@ -130,9 +130,9 @@ function reportFirebaseFailure(stage: string, error: unknown) {
   console.warn("Firebase operation failed", parameters);
   emit("app_firebase_error", parameters);
 }
-export const logPageView = () => {
+export const logPageView = (pathname: string, routeId: string) => {
   if (!analytics) return;
-  const page = nextPage(window.location.origin, window.location.pathname);
+  const page = nextPage(window.location.origin, pathname, routeId);
   if (!page) return;
   try { setDefaultEventParameters(page); } catch { /* Best effort. */ }
   emit("page_view", page);

@@ -31,34 +31,21 @@ export async function measureAction<T>(action: ActionName, run: () => Promise<T>
   }
 }
 
-const titles: Record<string, string> = {
-  "/": "홈", "/attendance": "출석부", "/attendance/download": "출석부 다운로드", "/attendance/info": "출석부 설정",
-  "/auth": "계정", "/auth/login": "로그인", "/auth/register": "회원가입", "/bbs": "게시판",
-  "/chat": "채팅", "/chat/idbot": "이디봇", "/construct": "준비 중", "/contributors": "만든 사람들",
-  "/dev": "개발자", "/dev/user": "사용자 관리", "/specialroom": "특별실", "/specialroom/apply": "특별실 신청",
-  "/specialroom/management": "신청 관리", "/specialroom/status": "신청 현황", "/setting": "설정", "/setting/account": "계정 설정",
-};
-export function pageDetails(origin: string, pathname: string) {
-  let path = pathname.replace(/\/$/, "") || "/";
-  let title = titles[path];
-  if (!title) {
-    const board = /^\/bbs\/[^/]+\/(?:(list|create)|[^/]+\/(view|edit))$/.exec(path);
-    if (board) {
-      const mode = board[1] || board[2];
-      path = mode === "list" || mode === "create" ? "/bbs/board/" + mode : "/bbs/board/post/" + mode;
-      title = ({ list: "게시판", create: "글 작성", view: "게시글", edit: "글 수정" } as Record<string, string>)[mode];
-    } else { path = "/not-found"; title = "페이지 없음"; }
-  }
-  return { page_location: origin + path, page_title: title, page_path: path };
+/** Route IDs come from React Router, never from URLs or user-authored headings. */
+export function pageDetails(origin: string, routeId?: string) {
+  const name = routeId?.replace(/^routes\//, "") || "unknown";
+  return { page_location: origin + "/" + name, page_title: name, page_path: "/" + name };
 }
 export function createPageTracker() {
   let lastPath: string | undefined;
+  let lastRoute: string | undefined;
   let previousLocation = "";
-  return (origin: string, pathname: string) => {
-    if (lastPath === pathname) return null;
-    const page = pageDetails(origin, pathname);
+  return (origin: string, pathname: string, routeId: string) => {
+    if (lastPath === pathname && lastRoute === routeId) return null;
+    const page = pageDetails(origin, routeId);
     const event = { ...page, page_referrer: previousLocation };
     lastPath = pathname;
+    lastRoute = routeId;
     previousLocation = page.page_location;
     return event;
   };
