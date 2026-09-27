@@ -1,3 +1,4 @@
+import { useFormSubmission } from "@/hooks/use-form-submission";
 import { notify } from "@/components/snackbar/notify";
 import { Box, Button, Link, Stack, TextField } from "@mui/material";
 import { AccountBox } from "@mui/icons-material";
@@ -5,8 +6,6 @@ import type { LoginSuccess } from "@/api/generated/models";
 
 import {
   closeAll,
-  startLoading,
-  stopLoading,
 } from "@/components/popup/hooks";
 import { SubmitButton, Text, TitleText } from "@/components/basics";
 import * as api from "@/api/actions";
@@ -16,7 +15,7 @@ import { useNavigate } from "react-router";
 export default function LoginPanel() {
   const navigate = useNavigate();
 
-  const onPostLogin = async (event: React.SubmitEvent<HTMLFormElement>) => {
+  const { onSubmit: onPostLogin, submitting } = useFormSubmission(async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const id = data.get("id")?.toString();
@@ -24,8 +23,6 @@ export default function LoginPanel() {
     if (!id || !password) {
       return;
     }
-
-    startLoading("로그인 중입니다...");
     try {
       const result = await api.postLogin({
         id,
@@ -34,10 +31,8 @@ export default function LoginPanel() {
       await onLoginSuccess(result);
     } catch (error) {
       api.onApiError(error);
-    } finally {
-      stopLoading();
     }
-  };
+  });
 
   const onLoginSuccess = async (result: LoginSuccess) => {
     if (result.callbacks) {
@@ -99,7 +94,7 @@ export default function LoginPanel() {
           id="password"
           autoComplete="current-password"
         />
-        <SubmitButton
+        <SubmitButton loading={submitting}
           fullWidth
           color="primary"
           height="48px"

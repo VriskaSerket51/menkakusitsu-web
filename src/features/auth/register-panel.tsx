@@ -1,7 +1,8 @@
+import { useState } from "react";
+import { useFormSubmission } from "@/hooks/use-form-submission";
 import { notify } from "@/components/snackbar/notify";
 import { Box, TextField } from "@mui/material";
 
-import { startLoading, stopLoading } from "@/components/popup/hooks";
 import { TitleText } from "@/components/basics";
 import { SubmitButton } from "@/components/basics/styled-button";
 import * as api from "@/api/actions";
@@ -10,28 +11,30 @@ import { useNavigate } from "react-router";
 
 export default function RegisterPanel() {
   const navigate = useNavigate();
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const onPostRegister = async (event: React.SubmitEvent<HTMLFormElement>) => {
+  const { onSubmit: onPostRegister, submitting } = useFormSubmission(async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setErrors({});
     const data = new FormData(event.currentTarget);
     const name = data.get("name")?.toString().trim();
     const sid = Number(data.get("sid")?.toString().trim());
     const email = data.get("email")?.toString().trim();
     const id = data.get("id")?.toString().trim();
-    const password = data.get("password")?.toString().trim();
-    const passwordCheck = data.get("passwordCheck")?.toString().trim();
+    const password = data.get("password")?.toString();
+    const passwordCheck = data.get("passwordCheck")?.toString();
     if (Number.isNaN(sid) || !Number.isInteger(sid) || sid <= 0) {
-      notify("학번의 형식이 잘못되었습니다.", "info");
+      setErrors({ sid: "학번의 형식이 잘못되었습니다." });
       return;
     }
     if (!name || !sid || !email || !id || !password || !passwordCheck) {
+      setErrors({ name: !name ? "이름을 입력해주세요." : "", id: !id ? "아이디를 입력해주세요." : "" });
       return;
     }
     if (password != passwordCheck) {
-      notify("비밀번호 확인을 잘못 입력하셨습니다.", "info");
+      setErrors({ passwordCheck: "비밀번호 확인을 잘못 입력하셨습니다." });
       return;
     }
-    startLoading("회원가입 중입니다...");
     try {
       const result = await api.postRegister({
         name: name,
@@ -40,13 +43,10 @@ export default function RegisterPanel() {
         id: id,
         password: utilities.hashSha3(password),
       });
-      stopLoading();
       notify("회원가입 성공!", "success");
       navigate("/");
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    } catch { /* The API client displays request failures. */ }
+  });
 
   return (
     <Box
@@ -79,6 +79,8 @@ export default function RegisterPanel() {
           fullWidth
           size="small"
           name="name"
+          error={Boolean(errors.name)}
+          helperText={errors.name}
           label="이름"
           autoComplete="name"
         />
@@ -91,7 +93,8 @@ export default function RegisterPanel() {
           label="학번"
           type="number"
           sx={{ appearance: "none" }}
-          helperText="1학년 1반 1번이면 1101"
+          error={Boolean(errors.sid)}
+          helperText={errors.sid || "1학년 1반 1번이면 1101"}
         />
         <TextField
           margin="normal"
@@ -109,6 +112,8 @@ export default function RegisterPanel() {
           fullWidth
           size="small"
           name="id"
+          error={Boolean(errors.id)}
+          helperText={errors.id}
           label="아이디"
           autoComplete="username"
         />
@@ -128,12 +133,15 @@ export default function RegisterPanel() {
           fullWidth
           size="small"
           name="passwordCheck"
+          error={Boolean(errors.passwordCheck)}
+          helperText={errors.passwordCheck}
+          onChange={() => setErrors(current => ({ ...current, passwordCheck: "" }))}
           autoComplete="new-password"
           label="비밀번호 확인"
           type="password"
         />
         <Box sx={{ marginTop: 3 }}>
-          <SubmitButton width="192px" color="primary">
+          <SubmitButton loading={submitting} width="192px" color="primary">
             가입하기
           </SubmitButton>
         </Box>

@@ -1,3 +1,4 @@
+import { useFormSubmission } from "@/hooks/use-form-submission";
 import { notify } from "@/components/snackbar/notify";
 import { useLoadError } from "@/hooks/use-load-error";
 import { LoadError } from "@/components/load-error";
@@ -6,7 +7,6 @@ import { Permission } from "@/features/auth/token";
 import { Box, Divider, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 
-import { startLoading, stopLoading } from "@/components/popup/hooks";
 import * as api from "@/api/actions";
 import * as utilities from "@/utils/utilities";
 import * as constants from "@/utils/constants";
@@ -50,39 +50,39 @@ function ChangeEmail() {
       });
   }, [trackLoad]);
 
+  const { onSubmit, submitting } = useFormSubmission((event: React.SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setErrorText(null);
+    const data = new FormData(event.currentTarget);
+    const newEmail = data.get("email")?.toString().trim();
+    if (email === null || !newEmail) {
+      return;
+    }
+    if (email == newEmail) {
+      setErrorText("이건 당신이 이미 쓰고 계시는 이메일입니다.");
+      return;
+    }
+    if (!utilities.validateEmail(newEmail)) {
+      setErrorText("유효하지 않은 이메일입니다!");
+      return;
+    }
+    return api
+      .putMyEmail({ oldEmail: email, newEmail: newEmail })
+      .then((result) => {
+        setEmail(result.newEmail);
+        notify("이메일이 변경되었습니다.", "success");
+      })
+      .catch(() => {
+        /* Api already displayed the error. */
+      });
+  });
+
   return (
     <>
       <LoadError message={loadError} />
       <Box
         component="form"
-        onSubmit={(event: React.SubmitEvent<HTMLFormElement>) => {
-          event.preventDefault();
-          setErrorText(null);
-          const data = new FormData(event.currentTarget);
-          const newEmail = data.get("email")?.toString();
-          if (email === null || !newEmail) {
-            return;
-          }
-          if (email == newEmail) {
-            setErrorText("이건 당신이 이미 쓰고 계시는 이메일입니다.");
-            return;
-          }
-          if (!utilities.validateEmail(newEmail)) {
-            setErrorText("유효하지 않은 이메일입니다!");
-            return;
-          }
-          startLoading("잠시만 기다려주세요...");
-          api
-            .putMyEmail({ oldEmail: email, newEmail: newEmail })
-            .then((result) => {
-              stopLoading();
-              setEmail(result.newEmail);
-              notify("이메일이 변경되었습니다.", "success");
-            })
-            .catch(() => {
-              /* Api already displayed the error. */
-            });
-        }}
+        onSubmit={onSubmit}
       >
         <AccountFields>
           <Box sx={{ width: "100%", justifyContent: "left" }}>
@@ -102,7 +102,7 @@ function ChangeEmail() {
               required
             />
           )}
-          <SubmitButton
+          <SubmitButton loading={submitting}
             color="primary"
             width="192px"
             height="48px"
@@ -118,38 +118,38 @@ function ChangeEmail() {
 function ChangePassword() {
   const [errorText, setErrorText] = useState<string | null>(null);
 
+  const { onSubmit, submitting } = useFormSubmission((event: React.SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setErrorText(null);
+    const data = new FormData(event.currentTarget);
+    const oldPassword = data.get("oldPassword")?.toString();
+    const newPassword = data.get("newPassword")?.toString();
+    const newPasswordCheck = data.get("newPasswordCheck")?.toString();
+    if (!oldPassword || !newPassword || !newPasswordCheck) {
+      return;
+    }
+    if (newPassword != newPasswordCheck) {
+      setErrorText("비밀번호와 비밀번호 확인이 다릅니다.");
+      return;
+    }
+      return api
+      .putMyPassword({
+        oldPassword: utilities.hashSha3(oldPassword),
+        newPassword: utilities.hashSha3(newPassword),
+      })
+      .then((result) => {
+        notify("비밀번호가 변경되었습니다.", "success");
+        window.location.reload();
+      })
+      .catch(() => {
+        /* Api already displayed the error. */
+      });
+  });
+
   return (
     <Box
       component="form"
-      onSubmit={(event: React.SubmitEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        setErrorText(null);
-        const data = new FormData(event.currentTarget);
-        const oldPassword = data.get("oldPassword")?.toString();
-        const newPassword = data.get("newPassword")?.toString();
-        const newPasswordCheck = data.get("newPasswordCheck")?.toString();
-        if (!oldPassword || !newPassword || !newPasswordCheck) {
-          return;
-        }
-        if (newPassword != newPasswordCheck) {
-          setErrorText("비밀번호와 비밀번호 확인이 다릅니다.");
-          return;
-        }
-        startLoading("잠시만 기다려주세요...");
-        api
-          .putMyPassword({
-            oldPassword: utilities.hashSha3(oldPassword),
-            newPassword: utilities.hashSha3(newPassword),
-          })
-          .then((result) => {
-            stopLoading();
-            notify("비밀번호가 변경되었습니다.", "success");
-            window.location.reload();
-          })
-          .catch(() => {
-            /* Api already displayed the error. */
-          });
-      }}
+      onSubmit={onSubmit}
     >
       <AccountFields>
         <Box sx={{ width: "100%", justifyContent: "left" }}>
@@ -186,7 +186,7 @@ function ChangePassword() {
           fullWidth
           required
         />
-        <SubmitButton
+        <SubmitButton loading={submitting}
           color="primary"
           width="192px"
           height="48px"

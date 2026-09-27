@@ -1,3 +1,4 @@
+import { useFormSubmission } from "@/hooks/use-form-submission";
 import { NoticeBadge } from "@/features/bbs/notice-badge";
 import { noticeSurface } from "@/features/bbs/notice-styles";
 import { useLoadError } from "@/hooks/use-load-error";
@@ -26,8 +27,6 @@ import * as utilities from "@/utils/utilities";
 import * as constants from "@/utils/constants";
 import {
   openYesNoDialog,
-  startLoading,
-  stopLoading,
 } from "@/components/popup/hooks";
 import PostList from "@/features/bbs/post-list";
 import { IconLink, Text } from "@/components/basics";
@@ -239,22 +238,20 @@ function CommentSection() {
       });
   }, [commentPage, board, postId, trackLoad]);
 
-  const onPostComment = (event: React.SubmitEvent<HTMLFormElement>) => {
+  const { onSubmit: onPostComment, submitting } = useFormSubmission((event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const comment = data.get("comment")?.toString();
     if (!comment) {
       return;
     }
-    startLoading("작성 중입니다...");
-    api
+    return api
       .postBbsComment({
         board: board,
         postId: Number(postId),
         content: comment,
       })
       .then((result) => {
-        stopLoading();
         refresh();
         if (commentRef?.current) {
           commentRef.current.value = "";
@@ -263,7 +260,7 @@ function CommentSection() {
       .catch(() => {
         setIsLoading(false);
       });
-  };
+  });
 
   useEffect(() => {
     refresh();
@@ -297,7 +294,7 @@ function CommentSection() {
               htmlInput: { maxLength: 300 },
             }}
           />
-          <Button type="submit" color="primary" variant="contained">
+          <Button type="submit" loading={submitting} aria-busy={submitting} color="primary" variant="contained">
             작성
           </Button>
         </Stack>

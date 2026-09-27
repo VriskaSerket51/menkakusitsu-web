@@ -1,3 +1,4 @@
+import { useFormSubmission } from "@/hooks/use-form-submission";
 import { getApiError } from "@/api/errors";
 import { closeSnackbar } from "notistack";
 import { useLoadError } from "@/hooks/use-load-error";
@@ -31,7 +32,6 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 
-import { startLoading, stopLoading } from "@/components/popup/hooks";
 import * as api from "@/api/actions";
 import { Text, TitleText } from "@/components/basics";
 import { SpecialroomInfoPanel } from "@/features/specialroom/info-panel";
@@ -60,7 +60,7 @@ export default function ApplyScreen() {
   const [purposeId, setPurposeId] = useState("");
   const [customLocation, setCustomLocation] = useState("");
   const [customPurpose, setCustomPurpose] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const [validationError, setValidationError] = useState<{ step: number; message: string } | null>(null);
   const [conflictError, setConflictError] = useState<string | null>(null);
   const selectedLocation = locationInfos.find(item => String(item.id) === locationId);
   const selectedPurpose = purposeInfos.find(item => String(item.id) === purposeId);
@@ -261,9 +261,10 @@ export default function ApplyScreen() {
   ];
 
   const onClickNext = () => {
-    if (activeStep === 1 && !location) { notify("사용 장소 선택을 하지 않으셨습니다.", "warning"); return; }
-    if (activeStep === 2 && !purpose) { notify("사용 목적 선택을 하지 않으셨습니다.", "warning"); return; }
-    if (activeStep === 3 && applicants.length === 0) { notify("학생 명단 선택을 하지 않으셨습니다.", "warning"); return; }
+    if (activeStep === 1 && !location) { setValidationError({ step: 1, message: "사용 장소 선택을 하지 않으셨습니다." }); return; }
+    if (activeStep === 2 && !purpose) { setValidationError({ step: 2, message: "사용 목적 선택을 하지 않으셨습니다." }); return; }
+    if (activeStep === 3 && applicants.length === 0) { setValidationError({ step: 3, message: "학생 명단 선택을 하지 않으셨습니다." }); return; }
+    setValidationError(null);
     setActiveStep(step => Math.min(step + 1, steps.length - 1));
   };
 
@@ -297,32 +298,30 @@ export default function ApplyScreen() {
     ]);
   }, [trackLoad]);
 
-  const onPostApply = (e: React.SubmitEvent<HTMLFormElement>) => {
+  const { onSubmit: onPostApply, submitting } = useFormSubmission((e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (submitting) return;
     if (!location) {
-      notify("사용 장소 선택을 하지 않으셨습니다.", "warning");
+      setValidationError({ step: 1, message: "사용 장소 선택을 하지 않으셨습니다." });
       setActiveStep(1);
       return;
     }
     if (!purpose) {
-      notify("사용 목적 선택을 하지 않으셨습니다.", "warning");
+      setValidationError({ step: 2, message: "사용 목적 선택을 하지 않으셨습니다." });
       setActiveStep(2);
       return;
     }
     if (applicants.length === 0) {
-      notify("학생 명단 선택을 하지 않으셨습니다.", "warning");
+      setValidationError({ step: 3, message: "학생 명단 선택을 하지 않으셨습니다." });
       setActiveStep(3);
       return;
     }
     if (!teacher) {
-      notify("선생님 선택을 하지 않으셨습니다.", "warning");
+      setValidationError({ step: 4, message: "선생님 선택을 하지 않으셨습니다." });
       setActiveStep(4);
       return;
     }
-    setSubmitting(true);
-    startLoading("특별실을 신청하는 중입니다...");
-    api
+    setValidationError(null);
+    return api
       .postSpecialroomApply({
         location: location,
         purpose: purpose,
@@ -334,7 +333,6 @@ export default function ApplyScreen() {
         when: when,
       })
       .then((result) => {
-        stopLoading();
         notify(
           "특별실 신청에 성공했습니다. 신청 현황 페이지를 보시겠습니까?",
           "success",
@@ -360,8 +358,8 @@ export default function ApplyScreen() {
           setConflictError(problem.message);
           setActiveStep(3);
         }
-      }).finally(() => { setSubmitting(false); stopLoading(); });
-  };
+      });
+  });
 
   return (
     <>
@@ -392,14 +390,16 @@ export default function ApplyScreen() {
                         },
                       }}
                     >
-                      <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1, pb: 2, "& > .MuiTypography-root": { color: "text.secondary", fontSize: "0.875rem" } }}>{step.content}</Box>
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1, pb: 2, "& > .MuiTypography-root": { color: "text.secondary", fontSize: "0.875rem" } }}>{step.content}
+                        {validationError?.step === index && !(index === 1 ? location : index === 2 ? purpose : index === 3 ? applicants.length : teacher) && <Alert severity="warning" role="alert">{validationError.message}</Alert>}
+                      </Box>
                       <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "flex-start", gap: 1, mb: 2 }}>
                         <Button type="button" color="inherit" onClick={onClickReset}>처음으로</Button>
                         <Button type="button" color="inherit" disabled={index === 0} onClick={onClickBack}>뒤로가기</Button>
                         {index !== steps.length - 1 ? (
                           <Button type="button" variant="contained" onClick={onClickNext}>다음</Button>
                         ) : (
-                          <Button type="submit" variant="contained" loading={submitting} disabled={!teacher}>신청하기</Button>
+                          <Button type="submit" aria-busy={submitting} variant="contained" loading={submitting} disabled={!teacher}>신청하기</Button>
                         )}
                       </Box>
                     </StepContent>

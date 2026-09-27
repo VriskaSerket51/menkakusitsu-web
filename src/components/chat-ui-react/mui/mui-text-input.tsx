@@ -41,10 +41,10 @@ export function MuiTextInput({
 
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
-        setResponse();
+        e.currentTarget.form?.requestSubmit();
       }
     },
-    [setResponse]
+    []
   );
 
   const sendButtonText = actionRequest.sendButtonText
@@ -53,6 +53,8 @@ export function MuiTextInput({
 
   return (
     <Box
+      component="form"
+      onSubmit={(event: React.SubmitEvent<HTMLFormElement>) => { event.preventDefault(); setResponse(); }}
       sx={{
         flex: "1 1 auto",
         display: "flex",
@@ -83,8 +85,7 @@ export function MuiTextInput({
       />
       <Button
         {...buttonProps}
-        type="button"
-        onClick={setResponse}
+        type="submit"
         disabled={!value}
         startIcon={<Icon>send</Icon>}
       >

@@ -1,3 +1,4 @@
+import { useFormSubmission } from "@/hooks/use-form-submission";
 import { useLoadError } from "@/hooks/use-load-error";
 import { LoadError } from "@/components/load-error";
 import { notify } from "@/components/snackbar/notify";
@@ -24,7 +25,6 @@ import {
 import { DeleteOutlined, UploadFile } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 
-import { startLoading, stopLoading } from "@/components/popup/hooks";
 import * as api from "@/api/actions";
 import { TitleText } from "@/components/basics";
 import { useNavigate, useParams } from "react-router";
@@ -58,7 +58,7 @@ export default function CreateScreen() {
       });
   }, [board, trackLoad]);
 
-  const onPostBbsPost = (e: React.SubmitEvent<HTMLFormElement>) => {
+  const { onSubmit: onPostBbsPost, submitting } = useFormSubmission((e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
     const title = data.get("title")?.toString();
@@ -68,8 +68,7 @@ export default function CreateScreen() {
     if (!title || !content || !header) {
       return;
     }
-    startLoading("제출 중입니다...");
-    api
+    return api
       .postBbsPost(
         {
           title: title,
@@ -81,7 +80,6 @@ export default function CreateScreen() {
         files,
       )
       .then((response) => {
-        stopLoading();
         notify("피드백 제출이 완료되었습니다.", "success");
         navigate(
           href("/bbs/:board/:postId/view", {
@@ -93,7 +91,7 @@ export default function CreateScreen() {
       .catch(() => {
         /* Api already displayed the error. */
       });
-  };
+  });
 
   return (
     <>
@@ -210,7 +208,7 @@ export default function CreateScreen() {
           </FormGroup>
           <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1, pt: 2, borderTop: 1, borderColor: "divider" }}>
             <Button type="button" color="inherit" onClick={() => navigate(href("/bbs/:board/list", { board }))}>목록</Button>
-            <Button type="submit" variant="contained">작성하기</Button>
+            <Button type="submit" loading={submitting} aria-busy={submitting} variant="contained">작성하기</Button>
           </Box>
         </PageForm>
       </PageSurface>

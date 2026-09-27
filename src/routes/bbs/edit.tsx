@@ -1,3 +1,4 @@
+import { useFormSubmission } from "@/hooks/use-form-submission";
 import Spinner from "@/components/basics/spinner";
 import { useLoadError } from "@/hooks/use-load-error";
 import { LoadError } from "@/components/load-error";
@@ -23,7 +24,6 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 
-import { startLoading, stopLoading } from "@/components/popup/hooks";
 import * as api from "@/api/actions";
 import { TitleText } from "@/components/basics";
 import { useNavigate, useParams } from "react-router";
@@ -45,7 +45,6 @@ export default function EditScreen() {
       ),
     )
       .then((response) => {
-        stopLoading();
         setPost(response.post);
         trackLoad(api.getBbsPostHeaders({ board: board }, { silent: true }))
           .then((result) => {
@@ -60,7 +59,7 @@ export default function EditScreen() {
       });
   }, [board, navigate, postId, trackLoad]);
 
-  const onPostBbsPost = (e: React.SubmitEvent<HTMLFormElement>) => {
+  const { onSubmit: onPostBbsPost, submitting } = useFormSubmission((e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
     const title = data.get("title")?.toString();
@@ -70,8 +69,7 @@ export default function EditScreen() {
     if (!title || !content || !header) {
       return;
     }
-    startLoading("수정 중입니다...");
-    api
+    return api
       .putBbsPost({
         postId: Number(postId),
         board: board,
@@ -81,7 +79,6 @@ export default function EditScreen() {
         isPublic: isPublic,
       })
       .then((result) => {
-        stopLoading();
         notify("피드백 수정이 완료되었습니다.", "success");
         navigate(
           href("/bbs/:board/:postId/view", { board: board, postId: postId }),
@@ -90,7 +87,7 @@ export default function EditScreen() {
       .catch(() => {
         /* Api already displayed the error. */
       });
-  };
+  });
 
   return (
     <>
@@ -172,7 +169,7 @@ export default function EditScreen() {
           )}
           <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1, pt: 2, borderTop: 1, borderColor: "divider" }}>
             <Button type="button" color="inherit" onClick={() => navigate(href("/bbs/:board/list", { board }))}>목록</Button>
-            <Button type="submit" variant="contained" disabled={!post}>수정하기</Button>
+            <Button type="submit" loading={submitting} aria-busy={submitting} variant="contained" disabled={!post}>수정하기</Button>
           </Box>
         </PageForm>
       </PageSurface>

@@ -1,3 +1,4 @@
+import { useFormSubmission } from "@/hooks/use-form-submission";
 import { notify } from "@/components/snackbar/notify";
 import { useLoadError } from "@/hooks/use-load-error";
 import { LoadError } from "@/components/load-error";
@@ -62,7 +63,7 @@ export function TimetablePanel(props: TimetableProps) {
       });
   }, [trackLoad]);
 
-  const onPutTimetable = (event: React.SubmitEvent<HTMLFormElement>) => {
+  const { onSubmit: onPutTimetable, submitting } = useFormSubmission((event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const timetableCells: apiTypes.TimetableCell[] = [];
@@ -73,7 +74,7 @@ export function TimetablePanel(props: TimetableProps) {
       }
       timetableCells.push({ key: key, value: value.toString() });
     }
-    api
+    return api
       .putTimetable({
         timetableInfo: timetableCells,
         when: getServiceDate(),
@@ -84,7 +85,7 @@ export function TimetablePanel(props: TimetableProps) {
       .catch(() => {
         setIsLoading(false);
       });
-  };
+  });
 
   return (
     <>
@@ -155,7 +156,7 @@ export function TimetablePanel(props: TimetableProps) {
         </TableContainer>
         {props.edit && (
           <Box sx={{ textAlign: "center", marginTop: "16px" }}>
-            <SubmitButton color="primary" width="25%">
+            <SubmitButton loading={submitting} color="primary" width="25%">
               수정하기
             </SubmitButton>
           </Box>
