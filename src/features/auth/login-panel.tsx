@@ -10,14 +10,13 @@ import {
 } from "@/components/popup/hooks";
 import { SubmitButton, Text, TitleText } from "@/components/basics";
 import * as api from "@/api/actions";
-import * as firebase from "@/utils/firebase.client";
 import * as utilities from "@/utils/utilities";
 import { useNavigate } from "react-router";
 
 export default function LoginPanel() {
   const navigate = useNavigate();
 
-  const onPostLogin = async (event: React.FormEvent<HTMLFormElement>) => {
+  const onPostLogin = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const id = data.get("id")?.toString();
@@ -41,10 +40,6 @@ export default function LoginPanel() {
   };
 
   const onLoginSuccess = async (result: LoginSuccess) => {
-    if (api.getPushApproved()) {
-      await firebase.createPushToken();
-    }
-
     if (result.callbacks) {
       if (result.callbacks.includes("needChangePw")) {
         notify(

@@ -1,18 +1,18 @@
-// Import the functions you need from the SDKs you need
+import { createFidRegistration, type RegistrationChange } from "./fid-registration";
+import { createPageTracker, pageDetails, failureKind, type ActionResult } from "./telemetry";
 import { initializeApp } from "firebase/app";
-import { getAnalytics, logEvent } from "firebase/analytics";
+import { initializeAnalytics, logEvent, setDefaultEventParameters, type Analytics } from "firebase/analytics";
 import {
-  deleteToken,
+  unregister,
+  onRegistered,
+  onUnregistered,
   getMessaging,
-  getToken,
+  register,
   Messaging,
 } from "firebase/messaging";
 
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { isFirebaseEnabled } from "./firebase-policy";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyAzQ_bR2dD4V1vdWoPViPXll6imyCajNCo",
   authDomain: "menkakusitsu-2d69d.firebaseapp.com",
@@ -23,60 +23,117 @@ const firebaseConfig = {
   measurementId: "G-TE638S9GQ9",
 };
 
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+export const firebaseEnabled = isFirebaseEnabled(
+  window.location.hostname,
+  import.meta.env.DEV,
+  import.meta.env.VITE_FIREBASE_ENABLED,
+);
+
+let registration: ReturnType<typeof createFidRegistration> | undefined;
+let analytics: Analytics | undefined;
 let messaging: Messaging | undefined;
-try {
-  messaging = getMessaging();
-} catch (error) {
-  console.error(`Error: Failed to initialize Firebase Messaging for ${error}`);
+if (firebaseEnabled) {
+  const app = initializeApp(firebaseConfig);
+  try {
+    analytics = initializeAnalytics(app, { config: {
+      send_page_view: false,
+      ...pageDetails(window.location.origin, window.location.pathname),
+      page_referrer: "",
+    } });
+  } catch (error) {
+    reportFirebaseFailure("analytics_init", error);
+  }
+  try {
+    const instance = getMessaging(app);
+    messaging = instance;
+    registration = createFidRegistration({
+      register: async () => {
+        const serviceWorkerRegistration = await navigator.serviceWorker.register(
+          "/firebase-messaging-sw.js?firebase=enabled", { scope: "/firebase-cloud-messaging-push-scope" },
+        );
+        await register(instance, { serviceWorkerRegistration, vapidKey: "BG_LNhZiWNMNjuR-PTiY8pLm0SJ8itD0lVcEr3cRtkhBEOtzcDbiUVVQ3i5ZERbsmw5Q8kPDqJ1KpvvYF7nKcbk" });
+      },
+      unregister: () => unregister(instance),
+      onRegistered: listener => onRegistered(instance, listener),
+      onUnregistered: listener => onUnregistered(instance, listener),
+    });
+    if (import.meta.hot) import.meta.hot.dispose(() => registration?.dispose());
+  } catch (error) {
+    reportFirebaseFailure("messaging_init", error);
+  }
+} else if ("serviceWorker" in navigator) {
+  // Remove only this application's previously registered Firebase workers.
+  void navigator.serviceWorker.getRegistrations().then(async registrations => {
+    await Promise.all(registrations.filter(registration =>
+      [registration.active, registration.waiting, registration.installing].some(worker => {
+        if (!worker) return false;
+        const url = new URL(worker.scriptURL);
+        return url.origin === window.location.origin && url.pathname === "/firebase-messaging-sw.js";
+      }),
+    ).map(registration => registration.unregister()));
+  }).catch(error => reportFirebaseFailure("worker_cleanup", error));
 }
 
 export const getFirebaseMessaging = () => {
   return messaging;
 };
 
-export const createPushToken = async (): Promise<string | null> => {
-  if (messaging) {
-    try {
-      const token = await getToken(messaging, {
-        vapidKey:
-          "BG_LNhZiWNMNjuR-PTiY8pLm0SJ8itD0lVcEr3cRtkhBEOtzcDbiUVVQ3i5ZERbsmw5Q8kPDqJ1KpvvYF7nKcbk",
-      });
-      if (token) {
-        return token;
-      } else {
-        return null;
-      }
-    } catch (e) {
-      console.error(e);
+export const subscribePushRegistration = (listener: (change: RegistrationChange) => void) =>
+  registration?.subscribe(listener) ?? (() => {});
+
+export const registerPush = async (): Promise<string | null> => {
+  if (!firebaseEnabled) return null;
+  if (!registration) {
+    const error = new DOMException("Push is unsupported", "NotSupportedError");
+    reportFirebaseFailure("push_register", error);
+    throw error;
+  }
+  try {
+    // Ask during the user gesture, before waiting for the service worker.
+    if (await Notification.requestPermission() !== "granted") {
+      reportFirebaseFailure("push_register", { name: "NotAllowedError" });
       return null;
     }
+    const installationId = await registration.register();
+    logPushEvent("registered");
+    return installationId;
+  } catch (error) {
+    reportFirebaseFailure("push_register", error);
+    throw error;
   }
-  return null;
 };
 
-export const deletePushToken = async (): Promise<boolean> => {
-  if (messaging) {
-    try {
-      const result = await deleteToken(messaging);
-      return result;
-    } catch (e) {
-      console.error(e);
-      return false;
-    }
+export const unregisterPush = async (): Promise<void> => {
+  if (!registration) return;
+  try {
+    await registration.unregister();
+    logPushEvent("unregistered");
+  } catch (error) {
+    reportFirebaseFailure("push_unregister", error);
+    throw error;
   }
-  return false;
 };
 
+const nextPage = createPageTracker();
+function emit(name: string, parameters: Record<string, string | number>) {
+  if (!analytics) return;
+  try { logEvent(analytics, name, parameters); } catch { /* Analytics must not interrupt the UI. */ }
+}
+export function logActionResult(result: ActionResult) {
+  emit("app_action", result);
+}
+export function logPushEvent(stage: "registered" | "unregistered" | "foreground_received" | "foreground_opened") {
+  emit("app_push", { stage });
+}
+function reportFirebaseFailure(stage: string, error: unknown) {
+  const parameters = { stage, failure_kind: failureKind(error) };
+  console.warn("Firebase operation failed", parameters);
+  emit("app_firebase_error", parameters);
+}
 export const logPageView = () => {
-  logEvent(analytics, "screen_view", {
-    firebase_screen: window.location.pathname,
-    firebase_screen_class: window.location.pathname,
-  });
-  logEvent(analytics, "page_view", {
-    page_title: window.location.pathname,
-    page_location: window.location.pathname,
-    page_path: window.location.pathname,
-  });
+  if (!analytics) return;
+  const page = nextPage(window.location.origin, window.location.pathname);
+  if (!page) return;
+  try { setDefaultEventParameters(page); } catch { /* Best effort. */ }
+  emit("page_view", page);
 };

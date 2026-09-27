@@ -1,3 +1,6 @@
+import axios from "axios";
+import { notify } from "@/components/snackbar/notify";
+import { getTokenPayload } from "@/features/auth/session-state";
 import {
   DarkMode,
   LightMode,
@@ -17,7 +20,7 @@ import {
   MenuItem,
   Tooltip,
 } from "@mui/material";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { openYesNoDialog, startLoading, stopLoading } from "@/components/popup/hooks";
 import * as api from "@/api/actions";
@@ -164,39 +167,45 @@ function LogoutButton() {
 }
 
 function NotificationButton() {
+  const busy = useRef(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isNotificationOn, setIsNotificationOn] = useState(
-    api.getPushApproved()
+    firebase.firebaseEnabled && api.getPushApproved()
   );
 
   return (
     <MenuItem
-      onClick={() => {
-        if (isLoading) {
-          return;
-        }
+      disabled={!firebase.firebaseEnabled}
+      onClick={async () => {
+        if (busy.current) return;
+        busy.current = true;
         setIsLoading(true);
-        if (isNotificationOn) {
-          firebase.deletePushToken().then((succeeded) => {
-            if (succeeded) {
-              api.setPushApproved(false);
-              setIsNotificationOn(false);
+        const { uid, sid } = getTokenPayload();
+        const sameSession = () => getTokenPayload().uid === uid && getTokenPayload().sid === sid;
+        try {
+          if (isNotificationOn) {
+            await api.deleteUserPush({ deviceId: storage.getDeviceId() });
+            if (!sameSession()) return;
+            api.setPushApproved(false);
+            setIsNotificationOn(false);
+            await firebase.unregisterPush();
+          } else {
+            const installationId = await firebase.registerPush();
+            if (!sameSession()) return;
+            if (!installationId) {
+              notify("알림을 사용하려면 브라우저의 알림 권한을 허용해 주세요.", "info");
+              return;
             }
-            setIsLoading(false);
-          });
-        } else {
-          firebase.createPushToken().then((token) => {
-            if (token) {
-              api.putUserPush({
-                pushToken: token,
-                deviceId: storage.getDeviceId(),
-              }).then(() => {
-                api.setPushApproved(true);
-                setIsNotificationOn(true);
-              }).catch(() => { /* Api already displayed the error. */ });
-            }
-            setIsLoading(false);
-          });
+            await api.putUserPush({ installationId, deviceId: storage.getDeviceId() });
+            if (!sameSession()) return;
+            api.setPushApproved(true);
+            setIsNotificationOn(true);
+          }
+        } catch (error) {
+          if (!axios.isAxiosError(error)) notify("알림 설정을 변경하지 못했습니다. 잠시 후 다시 시도해주세요.", "error");
+        } finally {
+          busy.current = false;
+          setIsLoading(false);
         }
       }}
     >

@@ -1,3 +1,4 @@
+import { measureAction } from "@/utils/telemetry";
 import {
   sessionLock,
   refreshSession,
@@ -13,7 +14,7 @@ import { createRequestRunner, type RequestOptions } from "@/api/request";
 import { stopLoading } from "@/components/popup/hooks";
 import { notify } from "@/components/snackbar/notify";
 import { getDeviceId, getPushList, savePushList } from "@/utils/storage";
-import { deletePushToken } from "@/utils/firebase.client";
+import { unregisterPush, logActionResult } from "@/utils/firebase.client";
 import {
   getAccessToken,
   getTokenPayload,
@@ -37,6 +38,7 @@ const request = createRequestRunner({
   getAccessToken,
   refresh: refreshSession,
   onError: onApiError,
+  onAction: logActionResult,
 });
 
 export const getPushApproved = () => {
@@ -60,23 +62,21 @@ export const setPushApproved = (value: boolean) => {
 
 // Generated functions own URLs, query encoding, request bodies and response types.
 export const postLogin = (props: apiTypes.LoginRequest) =>
-  sessionLock(async () => {
+  measureAction("login", () => sessionLock(async () => {
     const result = await client.postLogin(props);
     setAccessToken(result.accessToken);
     notifySessionChange();
     return result;
-  });
+  }), logActionResult);
 export const postRegister = (props: apiTypes.PostRegisterRequest) =>
-  request((config) => client.postRegister(props, config), { public: true });
+  request((config) => client.postRegister(props, config), { public: true, action: "register" });
 export const deleteLogout = async (props: apiTypes.DeleteLogoutRequest) => {
   if (getPushApproved()) {
     // Push cleanup is best effort; its failure must not prevent server-side logout.
     try {
-      await request(
-        (config) => client.deletePush({ deviceId: getDeviceId() }, config),
-        { silent: true },
-      );
-      if (await deletePushToken()) setPushApproved(false);
+      await deleteUserPush({ deviceId: getDeviceId() }, { silent: true });
+      setPushApproved(false);
+      await unregisterPush();
     } catch {
       /* The session still needs to be revoked. */
     }
@@ -100,6 +100,7 @@ export const postBbsPost = (
 ) =>
   request((config) =>
     client.postBbsPost({ props: JSON.stringify(props), data: files }, config),
+    { action: "post_create" },
   );
 
 export const getSpecialroomApply = async (
@@ -154,7 +155,7 @@ export const getBbsCommentList = (
 export const postBbsComment = (
   props: apiTypes.PostBbsCommentRequest,
   options: RequestOptions = {},
-) => request((config) => client.postBbsComment(props, config), options);
+) => request((config) => client.postBbsComment(props, config), { ...options, action: "comment_create" });
 export const deleteBbsComment = (
   props: apiTypes.DeleteBbsCommentRequest,
   options: RequestOptions = {},
@@ -168,11 +169,11 @@ export const getMeal = (options: RequestOptions = {}) =>
 export const postSpecialroomApply = (
   props: apiTypes.PostApplyRequest,
   options: RequestOptions = {},
-) => request((config) => client.postApply(props, config), options);
+) => request((config) => client.postApply(props, config), { ...options, action: "specialroom_apply" });
 export const deleteSpecialroomApply = (
   props: apiTypes.DeleteApplyRequest,
   options: RequestOptions = {},
-) => request((config) => client.deleteApply(props, config), options);
+) => request((config) => client.deleteApply(props, config), { ...options, action: "specialroom_cancel" });
 export const getAttendanceInfo = (options: RequestOptions = {}) =>
   request((config) => client.getAttendanceInfo(config), options);
 export const getAttendanceList = (
@@ -184,7 +185,7 @@ export const getSpecialroomInfo = (options: RequestOptions = {}) =>
 export const putSpecialroomInfo = (
   props: apiTypes.PutInfoRequest,
   options: RequestOptions = {},
-) => request((config) => client.putSpecialroomInfo(props, config), options);
+) => request((config) => client.putSpecialroomInfo(props, config), { ...options, action: "specialroom_manage" });
 export const getSpecialroomManagerInfo = (
   props: apiTypes.GetManagerRequest,
   options: RequestOptions = {},
@@ -206,14 +207,26 @@ export const putTimetable = (
   options: RequestOptions = {},
 ) =>
   request((config) => client.putTimetable(props.when, props, config), options);
+// Serialize writes so disabling a device cannot be overtaken by an earlier FID refresh.
+let pushWrite = Promise.resolve();
+const pushRequest = <T>(run: (config: import("axios").AxiosRequestConfig) => Promise<T>, options: RequestOptions) => {
+  const { uid, sid } = getTokenPayload();
+  const result = pushWrite.then(() => request(config => {
+    const current = getTokenPayload();
+    if (!uid || current.uid !== uid || current.sid !== sid) throw new axios.CanceledError("Push session changed");
+    return run(config);
+  }, options));
+  pushWrite = result.then(() => {}, () => {});
+  return result;
+};
 export const putUserPush = (
   props: apiTypes.PutPushRequest,
   options: RequestOptions = {},
-) => request((config) => client.putPush(props, config), options);
+) => pushRequest((config) => client.putPush(props, config), { ...options, action: "push_save" });
 export const deleteUserPush = (
   props: apiTypes.DeletePushRequest,
   options: RequestOptions = {},
-) => request((config) => client.deletePush(props, config), options);
+) => pushRequest((config) => client.deletePush(props, config), { ...options, action: "push_remove" });
 export const getMyPrivateInfo = (options: RequestOptions = {}) =>
   request((config) => client.getMyPrivateInfo(config), options);
 export const putMyEmail = (

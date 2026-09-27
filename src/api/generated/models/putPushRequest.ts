@@ -6,7 +6,17 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * Provide deviceId and exactly one of installationId or legacy pushToken.
+ */
 export interface PutPushRequest {
-  pushToken: string;
+  /** @pattern ^[cdef][A-Za-z0-9_-]{21}$ */
+  installationId?: string;
+  /**
+     * Legacy FCM token; use installationId for new clients.
+     * @minLength 1
+     */
+  pushToken?: string;
+  /** @minLength 1 */
   deviceId: string;
 }

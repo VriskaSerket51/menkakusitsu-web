@@ -7,5 +7,11 @@
  */
 
 export interface DeletePushRequest {
+  /** @minLength 1 */
   deviceId: string;
+  /**
+     * Only remove this FID; omitted for explicit device logout or disable.
+     * @pattern ^[cdef][A-Za-z0-9_-]{21}$
+     */
+  installationId?: string;
 }

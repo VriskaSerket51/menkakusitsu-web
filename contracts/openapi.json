@@ -3548,7 +3548,13 @@
         "type": "object",
         "properties": {
           "deviceId": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1
+          },
+          "installationId": {
+            "description": "Only remove this FID; omitted for explicit device logout or disable.",
+            "type": "string",
+            "pattern": "^[cdef][A-Za-z0-9_-]{21}$"
           }
         },
         "required": [
@@ -3593,17 +3599,24 @@
       "PutPushRequest": {
         "type": "object",
         "properties": {
+          "installationId": {
+            "type": "string",
+            "pattern": "^[cdef][A-Za-z0-9_-]{21}$"
+          },
           "pushToken": {
-            "type": "string"
+            "description": "Legacy FCM token; use installationId for new clients.",
+            "type": "string",
+            "minLength": 1
           },
           "deviceId": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1
           }
         },
         "required": [
-          "pushToken",
           "deviceId"
-        ]
+        ],
+        "description": "Provide deviceId and exactly one of installationId or legacy pushToken."
       },
       "LoginSuccess": {
         "type": "object",

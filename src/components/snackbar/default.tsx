@@ -1,3 +1,4 @@
+import { logPushEvent } from "@/utils/firebase.client";
 import {
   Box,
   Card,
@@ -38,6 +39,7 @@ export const DefaultSnackbar = forwardRef(
         onClick={() => {
           onClose();
           if (payload && payload.fcmOptions && payload.fcmOptions.link) {
+            logPushEvent("foreground_opened");
             window.location.href = payload.fcmOptions.link;
           }
         }}
@@ -76,7 +78,7 @@ export const DefaultSnackbar = forwardRef(
                   color: "secondary.contrastText",
                   transition: "all .2s",
                 }}
-                onClick={onClose}
+                onClick={(event) => { event.stopPropagation(); onClose(); }}
               >
                 <Close fontSize="small" />
               </IconButton>
