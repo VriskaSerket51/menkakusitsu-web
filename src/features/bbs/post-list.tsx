@@ -33,7 +33,7 @@ export default function PostList({
   board: string;
   postId?: string;
 }) {
-  const { loadError, trackLoad } = useLoadError();
+  const { loadError, trackLoad, retry } = useLoadError();
 
   const [isLoading, setIsLoading] = useState(true);
   const [postCount, setPostCount] = useState(0);
@@ -71,7 +71,7 @@ export default function PostList({
 
   return (
     <>
-      <LoadError message={loadError} />
+      <LoadError message={loadError} onRetry={retry} />
       <PageSurface maxWidth="md">
         <PageContent sx={{ gap: 3 }}>
           <TitleText color="text.primary" variant="h2">

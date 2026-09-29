@@ -1,3 +1,4 @@
+import { FormError } from "@/components/form-error";
 import { useFormSubmission } from "@/hooks/use-form-submission";
 import { notify } from "@/components/snackbar/notify";
 import { useLoadError } from "@/hooks/use-load-error";
@@ -35,7 +36,7 @@ export default function AccountTab() {
 }
 
 function ChangeEmail() {
-  const { loadError, trackLoad } = useLoadError();
+  const { loadError, trackLoad, retry } = useLoadError();
 
   const [email, setEmail] = useState<string | null>(null);
   const [errorText, setErrorText] = useState<string | null>(null);
@@ -50,7 +51,7 @@ function ChangeEmail() {
       });
   }, [trackLoad]);
 
-  const { onSubmit, submitting } = useFormSubmission((event: React.SubmitEvent<HTMLFormElement>) => {
+  const { onSubmit, submitting, submitError, onKeyDownCapture } = useFormSubmission((event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     setErrorText(null);
     const data = new FormData(event.currentTarget);
@@ -67,23 +68,21 @@ function ChangeEmail() {
       return;
     }
     return api
-      .putMyEmail({ oldEmail: email, newEmail: newEmail })
+      .putMyEmail({ oldEmail: email, newEmail: newEmail }, { silent: true })
       .then((result) => {
         setEmail(result.newEmail);
         notify("이메일이 변경되었습니다.", "success");
-      })
-      .catch(() => {
-        /* Api already displayed the error. */
       });
   });
 
   return (
     <>
-      <LoadError message={loadError} />
+      <LoadError message={loadError} onRetry={retry} />
       <Box
         component="form"
-        onSubmit={onSubmit}
+        onKeyDownCapture={onKeyDownCapture} aria-busy={submitting} onSubmit={onSubmit}
       >
+        <FormError message={submitError} />
         <AccountFields>
           <Box sx={{ width: "100%", justifyContent: "left" }}>
             <Text variant="h6" sx={{ fontWeight: 700 }}>이메일 변경</Text>
@@ -95,6 +94,7 @@ function ChangeEmail() {
               type="email"
               autoComplete="email"
               name="email"
+          onChange={() => setErrorText(null)}
               error={Boolean(errorText)}
               helperText={errorText}
               defaultValue={email}
@@ -118,7 +118,7 @@ function ChangeEmail() {
 function ChangePassword() {
   const [errorText, setErrorText] = useState<string | null>(null);
 
-  const { onSubmit, submitting } = useFormSubmission((event: React.SubmitEvent<HTMLFormElement>) => {
+  const { onSubmit, submitting, submitError, onKeyDownCapture } = useFormSubmission((event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     setErrorText(null);
     const data = new FormData(event.currentTarget);
@@ -132,25 +132,23 @@ function ChangePassword() {
       setErrorText("비밀번호와 비밀번호 확인이 다릅니다.");
       return;
     }
-      return api
+    return api
       .putMyPassword({
         oldPassword: utilities.hashSha3(oldPassword),
         newPassword: utilities.hashSha3(newPassword),
-      })
+      }, { silent: true })
       .then((result) => {
         notify("비밀번호가 변경되었습니다.", "success");
         window.location.reload();
-      })
-      .catch(() => {
-        /* Api already displayed the error. */
       });
   });
 
   return (
     <Box
       component="form"
-      onSubmit={onSubmit}
+      onKeyDownCapture={onKeyDownCapture} aria-busy={submitting} onSubmit={onSubmit}
     >
+        <FormError message={submitError} />
       <AccountFields>
         <Box sx={{ width: "100%", justifyContent: "left" }}>
           <Text variant="h6" sx={{ fontWeight: 700 }}>비밀번호 변경</Text>
@@ -169,6 +167,7 @@ function ChangePassword() {
           label="새 비밀번호"
           autoComplete="new-password"
           name="newPassword"
+          onChange={() => setErrorText(null)}
           type="password"
           error={Boolean(errorText)}
           helperText={errorText}
@@ -180,6 +179,7 @@ function ChangePassword() {
           label="새 비밀번호 확인"
           autoComplete="new-password"
           name="newPasswordCheck"
+          onChange={() => setErrorText(null)}
           type="password"
           error={Boolean(errorText)}
           helperText={errorText}

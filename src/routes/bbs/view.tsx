@@ -1,3 +1,4 @@
+import { FormError } from "@/components/form-error";
 import { useFormSubmission } from "@/hooks/use-form-submission";
 import { NoticeBadge } from "@/features/bbs/notice-badge";
 import { noticeSurface } from "@/features/bbs/notice-styles";
@@ -36,7 +37,7 @@ import Spinner from "@/components/basics/spinner";
 import { getSpanInfo } from "@/utils/utilities";
 
 export default function ViewScreen() {
-  const { loadError, trackLoad } = useLoadError();
+  const { loadError, trackLoad, retry } = useLoadError();
 
   const { board, postId } = useParams() as Route.ComponentProps["params"];
 
@@ -74,7 +75,7 @@ export default function ViewScreen() {
 
   return (
     <>
-      <LoadError message={loadError} />
+      <LoadError message={loadError} onRetry={retry} />
       <PageSurface maxWidth="md">
         <Box
           sx={{
@@ -199,7 +200,7 @@ export default function ViewScreen() {
 export const handle = { permission: Permission.Student };
 
 function CommentSection() {
-  const { loadError, trackLoad } = useLoadError();
+  const { loadError, trackLoad, retry } = useLoadError();
 
   const { board, postId } = useParams() as Route.ComponentProps["params"];
   const commentRef = useRef<HTMLTextAreaElement>(null);
@@ -238,7 +239,7 @@ function CommentSection() {
       });
   }, [commentPage, board, postId, trackLoad]);
 
-  const { onSubmit: onPostComment, submitting } = useFormSubmission((event: React.SubmitEvent<HTMLFormElement>) => {
+  const { onSubmit: onPostComment, submitting, submitError, onKeyDownCapture } = useFormSubmission((event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const comment = data.get("comment")?.toString();
@@ -250,15 +251,12 @@ function CommentSection() {
         board: board,
         postId: Number(postId),
         content: comment,
-      })
+      }, { silent: true })
       .then((result) => {
         refresh();
         if (commentRef?.current) {
           commentRef.current.value = "";
         }
-      })
-      .catch(() => {
-        setIsLoading(false);
       });
   });
 
@@ -268,14 +266,15 @@ function CommentSection() {
 
   return (
     <>
-      <LoadError message={loadError} />
+      <LoadError message={loadError} onRetry={retry} />
       <Box
         component="form"
-        onSubmit={onPostComment}
+        onKeyDownCapture={onKeyDownCapture} aria-busy={submitting} onSubmit={onPostComment}
         sx={{
           mt: "16px",
         }}
       >
+        <FormError message={submitError} />
         <Text variant="h6">의견 {isLoading ? 0 : commentCount}개</Text>
         <Stack
           spacing={2}
@@ -286,6 +285,8 @@ function CommentSection() {
         >
           <TextField
             name="comment"
+            disabled={submitting}
+            required
             inputRef={commentRef}
             fullWidth
             multiline

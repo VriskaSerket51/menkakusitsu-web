@@ -1,3 +1,4 @@
+import { FormError } from "@/components/form-error";
 import { useFormSubmission } from "@/hooks/use-form-submission";
 import { notify } from "@/components/snackbar/notify";
 import { useLoadError } from "@/hooks/use-load-error";
@@ -38,7 +39,7 @@ type TimetableProps = {
 };
 
 export function TimetablePanel(props: TimetableProps) {
-  const { loadError, trackLoad } = useLoadError();
+  const { loadError, trackLoad, retry } = useLoadError();
 
   const [timetable, setTimetable] = useState<apiTypes.Timetable | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -63,7 +64,7 @@ export function TimetablePanel(props: TimetableProps) {
       });
   }, [trackLoad]);
 
-  const { onSubmit: onPutTimetable, submitting } = useFormSubmission((event: React.SubmitEvent<HTMLFormElement>) => {
+  const { onSubmit: onPutTimetable, submitting, submitError, onKeyDownCapture } = useFormSubmission((event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const timetableCells: apiTypes.TimetableCell[] = [];
@@ -78,19 +79,17 @@ export function TimetablePanel(props: TimetableProps) {
       .putTimetable({
         timetableInfo: timetableCells,
         when: getServiceDate(),
-      })
+      }, { silent: true })
       .then((result) => {
         notify("시간표가 저장되었습니다.", "success");
-      })
-      .catch(() => {
-        setIsLoading(false);
       });
   });
 
   return (
     <>
-      <LoadError message={loadError} />
-      <Box component="form" onSubmit={onPutTimetable}>
+      <LoadError message={loadError} onRetry={retry} />
+      <Box component="form" onKeyDownCapture={onKeyDownCapture} aria-busy={submitting} onSubmit={onPutTimetable}>
+        <FormError message={submitError} />
         <TableContainer component={Paper} tabIndex={0} role="region" aria-label="시간표">
           <Table aria-label="시간표" sx={{ minWidth: 600 }}>
             <TableHead>

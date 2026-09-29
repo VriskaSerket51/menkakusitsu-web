@@ -1,3 +1,4 @@
+import { FormError } from "@/components/form-error";
 import { useFormSubmission } from "@/hooks/use-form-submission";
 import { getApiError } from "@/api/errors";
 import { closeSnackbar } from "notistack";
@@ -37,7 +38,7 @@ import { Text, TitleText } from "@/components/basics";
 import { SpecialroomInfoPanel } from "@/features/specialroom/info-panel";
 
 export default function ApplyScreen() {
-  const { loadError, trackLoad } = useLoadError();
+  const { loadError, trackLoad, retry } = useLoadError();
 
   const [managerInfo, setManagerInfo] = useState<apiTypes.UserInfo | null>(
     null,
@@ -206,7 +207,7 @@ export default function ApplyScreen() {
       content: (
         <>
           <Text>학번 혹은 이름 입력 시 자동완성이 활성화됩니다.</Text>
-          {conflictError && <Alert severity="error">{conflictError}</Alert>}
+          {conflictError && <Alert severity="error" tabIndex={-1} data-form-error>{conflictError}</Alert>}
           <Autocomplete
             multiple
             value={applicants}
@@ -298,8 +299,9 @@ export default function ApplyScreen() {
     ]);
   }, [trackLoad]);
 
-  const { onSubmit: onPostApply, submitting } = useFormSubmission((e: React.SubmitEvent<HTMLFormElement>) => {
+  const { onSubmit: onPostApply, submitting, submitError, onKeyDownCapture } = useFormSubmission((e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (activeStep < steps.length - 1) { onClickNext(); return; }
     if (!location) {
       setValidationError({ step: 1, message: "사용 장소 선택을 하지 않으셨습니다." });
       setActiveStep(1);
@@ -331,7 +333,7 @@ export default function ApplyScreen() {
         })),
         teacherUid: teacher.uid,
         when: when,
-      })
+      }, { silent: true })
       .then((result) => {
         notify(
           "특별실 신청에 성공했습니다. 신청 현황 페이지를 보시겠습니까?",
@@ -357,15 +359,17 @@ export default function ApplyScreen() {
         if (problem?.code === "SPECIALROOM_CONFLICT") {
           setConflictError(problem.message);
           setActiveStep(3);
-        }
+          document.getElementById("autocomplete-students")?.focus();
+        } else throw error;
       });
   });
 
   return (
     <>
-      <LoadError message={loadError} />
+      <LoadError message={loadError} onRetry={retry} />
       <PageSurface maxWidth="md">
-        <PageForm onSubmit={onPostApply}>
+        <PageForm onKeyDownCapture={onKeyDownCapture} aria-busy={submitting} onSubmit={onPostApply}>
+        <FormError message={submitError} />
           <TitleText color="text.primary" variant="h2">
             특별실 신청하기
           </TitleText>
@@ -387,11 +391,12 @@ export default function ApplyScreen() {
                       slotProps={{
                         transition: {
                           unmountOnExit: false,
+                          onEntered: (element: HTMLElement) => { element.querySelector<HTMLElement>('input:not([type="hidden"]), [role="combobox"], button')?.focus(); },
                         },
                       }}
                     >
                       <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1, pb: 2, "& > .MuiTypography-root": { color: "text.secondary", fontSize: "0.875rem" } }}>{step.content}
-                        {validationError?.step === index && !(index === 1 ? location : index === 2 ? purpose : index === 3 ? applicants.length : teacher) && <Alert severity="warning" role="alert">{validationError.message}</Alert>}
+                        {validationError?.step === index && !(index === 1 ? location : index === 2 ? purpose : index === 3 ? applicants.length : teacher) && <Alert severity="warning" role="alert" tabIndex={-1} data-form-error>{validationError.message}</Alert>}
                       </Box>
                       <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "flex-start", gap: 1, mb: 2 }}>
                         <Button type="button" color="inherit" onClick={onClickReset}>처음으로</Button>

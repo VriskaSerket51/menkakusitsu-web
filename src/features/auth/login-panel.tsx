@@ -1,3 +1,4 @@
+import { FormError } from "@/components/form-error";
 import { useFormSubmission } from "@/hooks/use-form-submission";
 import { notify } from "@/components/snackbar/notify";
 import { Box, Button, Link, Stack, TextField } from "@mui/material";
@@ -15,7 +16,7 @@ import { useNavigate } from "react-router";
 export default function LoginPanel() {
   const navigate = useNavigate();
 
-  const { onSubmit: onPostLogin, submitting } = useFormSubmission(async (event: React.SubmitEvent<HTMLFormElement>) => {
+  const { onSubmit: onPostLogin, submitting, submitError, onKeyDownCapture } = useFormSubmission(async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const id = data.get("id")?.toString();
@@ -23,15 +24,11 @@ export default function LoginPanel() {
     if (!id || !password) {
       return;
     }
-    try {
-      const result = await api.postLogin({
-        id,
-        password: utilities.hashSha3(password),
-      });
-      await onLoginSuccess(result);
-    } catch (error) {
-      api.onApiError(error);
-    }
+    const result = await api.postLogin({
+      id,
+      password: utilities.hashSha3(password),
+    });
+    await onLoginSuccess(result);
   });
 
   const onLoginSuccess = async (result: LoginSuccess) => {
@@ -75,7 +72,8 @@ export default function LoginPanel() {
       >
         로그인하세요.
       </TitleText>
-      <Box component="form" onSubmit={onPostLogin} sx={{ width: "100%", maxWidth: 480 }}>
+      <Box component="form" onKeyDownCapture={onKeyDownCapture} aria-busy={submitting} onSubmit={onPostLogin} sx={{ width: "100%", maxWidth: 480 }}>
+        <FormError message={submitError} />
         <TextField
           margin="normal"
           required

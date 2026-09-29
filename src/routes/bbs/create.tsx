@@ -1,3 +1,4 @@
+import { FormError } from "@/components/form-error";
 import { useFormSubmission } from "@/hooks/use-form-submission";
 import { useLoadError } from "@/hooks/use-load-error";
 import { LoadError } from "@/components/load-error";
@@ -30,7 +31,7 @@ import { TitleText } from "@/components/basics";
 import { useNavigate, useParams } from "react-router";
 
 export default function CreateScreen() {
-  const { loadError, trackLoad } = useLoadError();
+  const { loadError, trackLoad, retry } = useLoadError();
 
   const navigate = useNavigate();
   const { board } = useParams() as Route.ComponentProps["params"];
@@ -58,7 +59,7 @@ export default function CreateScreen() {
       });
   }, [board, trackLoad]);
 
-  const { onSubmit: onPostBbsPost, submitting } = useFormSubmission((e: React.SubmitEvent<HTMLFormElement>) => {
+  const { onSubmit: onPostBbsPost, submitting, submitError, onKeyDownCapture } = useFormSubmission((e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
     const title = data.get("title")?.toString();
@@ -77,8 +78,7 @@ export default function CreateScreen() {
           board: board,
           isPublic: isPublic,
         },
-        files,
-      )
+        files, { silent: true })
       .then((response) => {
         notify("피드백 제출이 완료되었습니다.", "success");
         navigate(
@@ -87,17 +87,15 @@ export default function CreateScreen() {
             postId: String(response.postId),
           }),
         );
-      })
-      .catch(() => {
-        /* Api already displayed the error. */
       });
   });
 
   return (
     <>
-      <LoadError message={loadError} />
+      <LoadError message={loadError} onRetry={retry} />
       <PageSurface maxWidth="md">
-        <PageForm onSubmit={onPostBbsPost} sx={{ gap: 3 }}>
+        <PageForm onKeyDownCapture={onKeyDownCapture} aria-busy={submitting} onSubmit={onPostBbsPost} sx={{ gap: 3 }}>
+        <FormError message={submitError} />
           <TitleText color="text.primary" variant="h2">
             피드백 작성
           </TitleText>

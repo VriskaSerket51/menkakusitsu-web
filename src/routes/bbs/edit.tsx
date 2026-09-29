@@ -1,3 +1,4 @@
+import { FormError } from "@/components/form-error";
 import { useFormSubmission } from "@/hooks/use-form-submission";
 import Spinner from "@/components/basics/spinner";
 import { useLoadError } from "@/hooks/use-load-error";
@@ -29,7 +30,7 @@ import { TitleText } from "@/components/basics";
 import { useNavigate, useParams } from "react-router";
 
 export default function EditScreen() {
-  const { loadError, trackLoad } = useLoadError();
+  const { loadError, trackLoad, retry } = useLoadError();
 
   const { board, postId } = useParams() as Route.ComponentProps["params"];
   const navigate = useNavigate();
@@ -59,7 +60,7 @@ export default function EditScreen() {
       });
   }, [board, navigate, postId, trackLoad]);
 
-  const { onSubmit: onPostBbsPost, submitting } = useFormSubmission((e: React.SubmitEvent<HTMLFormElement>) => {
+  const { onSubmit: onPostBbsPost, submitting, submitError, onKeyDownCapture } = useFormSubmission((e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
     const title = data.get("title")?.toString();
@@ -77,23 +78,21 @@ export default function EditScreen() {
         content: content,
         header: header,
         isPublic: isPublic,
-      })
+      }, { silent: true })
       .then((result) => {
         notify("피드백 수정이 완료되었습니다.", "success");
         navigate(
           href("/bbs/:board/:postId/view", { board: board, postId: postId }),
         );
-      })
-      .catch(() => {
-        /* Api already displayed the error. */
       });
   });
 
   return (
     <>
-      <LoadError message={loadError} />
+      <LoadError message={loadError} onRetry={retry} />
       <PageSurface maxWidth="md">
-        <PageForm onSubmit={onPostBbsPost} sx={{ gap: 3 }}>
+        <PageForm onKeyDownCapture={onKeyDownCapture} aria-busy={submitting} onSubmit={onPostBbsPost} sx={{ gap: 3 }}>
+        <FormError message={submitError} />
           <TitleText color="text.primary" variant="h2">
             피드백 수정
           </TitleText>

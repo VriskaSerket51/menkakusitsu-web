@@ -1,3 +1,4 @@
+import { isChatSubmit, isCompositionEnter } from "@/utils/form-keyboard";
 import {
   Box,
   Button,
@@ -23,23 +24,29 @@ export function MuiTextInput({
   buttonProps?: ButtonProps;
 }): React.ReactElement {
   const chatCtl = chatController;
+  const inputRef = React.useRef<HTMLTextAreaElement>(null);
+  const sending = React.useRef(false);
   const [value, setValue] = React.useState(actionRequest.defaultValue);
 
   const setResponse = React.useCallback((): void => {
-    if (value) {
+    if (value?.trim() && !sending.current) {
+      sending.current = true;
       const res: TextActionResponse = { type: "text", value };
-      chatCtl.setActionResponse(actionRequest, res);
-      setValue("");
+      try {
+        chatCtl.setActionResponse(actionRequest, res);
+        setValue("");
+        inputRef.current?.focus();
+      } finally { queueMicrotask(() => { sending.current = false; }); }
     }
   }, [actionRequest, chatCtl, value]);
 
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>): void => {
-      if (e.nativeEvent.isComposing) {
+      if (isCompositionEnter(e.nativeEvent)) {
         return;
       }
 
-      if (e.key === "Enter" && !e.shiftKey) {
+      if (isChatSubmit(e.nativeEvent)) {
         e.preventDefault();
         e.currentTarget.form?.requestSubmit();
       }
@@ -75,6 +82,7 @@ export function MuiTextInput({
         placeholder={actionRequest.placeholder}
         value={value}
         onChange={(e): void => setValue(e.target.value)}
+        inputRef={inputRef}
         autoFocus
         multiline
         variant="outlined"
@@ -86,7 +94,7 @@ export function MuiTextInput({
       <Button
         {...buttonProps}
         type="submit"
-        disabled={!value}
+        disabled={!value?.trim()}
         startIcon={<Icon>send</Icon>}
       >
         {sendButtonText}

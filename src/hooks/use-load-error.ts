@@ -4,8 +4,11 @@ import { getApiError } from "@/api/errors";
 
 /** Automatic queries report locally; explicit mutations keep snackbar feedback. */
 export function useLoadError() {
+  const [attempt, setAttempt] = useState(0);
+  const retry = () => { setLoadError(null); setAttempt(value => value + 1); };
   const [loadError, setLoadError] = useState<string | null>(null);
   const trackLoad = useCallback(<T>(request: Promise<T>): Promise<T> => {
+    void attempt; // A retry changes trackLoad identity and reruns its dependent query effects.
     setLoadError(null);
     return request.catch((error: unknown) => {
       if (!axios.isCancel(error))
@@ -15,6 +18,6 @@ export function useLoadError() {
         );
       throw error;
     });
-  }, []);
-  return { loadError, trackLoad };
+  }, [attempt]);
+  return { loadError, trackLoad, retry };
 }

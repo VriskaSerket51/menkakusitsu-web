@@ -13,7 +13,7 @@ import type { UserInfo } from "@/api/types";
 import * as api from "@/api/actions";
 
 export default function UserManagementScreen() {
-  const { loadError, trackLoad } = useLoadError();
+  const { loadError, trackLoad, retry } = useLoadError();
   const [users, setUsers] = useState<UserInfo[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -40,8 +40,7 @@ export default function UserManagementScreen() {
     <PageContent>
       <TitleText variant="h2" color="text.primary">유저 관리</TitleText>
       <TextField label="이름" name="name" value={query} onChange={event => setQuery(event.target.value)} fullWidth />
-      <LoadError message={loadError} />
-      {loadError && <Button color="inherit" onClick={refresh} disabled={loading}>다시 시도</Button>}
+      <LoadError message={loadError} onRetry={retry} />
       {loading ? <CircularProgress aria-label="유저 목록을 불러오는 중입니다" /> : !loadError && (
         <Stack spacing={1} sx={{ width: "100%" }}>
           {visibleUsers.length === 0 && <Alert severity="info">{query.trim() ? "검색 결과가 없습니다." : "등록된 학생이 없습니다."}</Alert>}

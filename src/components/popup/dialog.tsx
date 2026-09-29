@@ -53,7 +53,9 @@ export function DialogComponent(props: DialogComponentProps) {
       aria-label={title ? undefined : "확인"}
       transitionDuration={reducedMotion ? 0 : undefined}
       sx={{ "& .MuiDialog-paper": { m: { xs: 2, sm: 4 }, width: { xs: "calc(100% - 32px)", sm: "calc(100% - 64px)" }, borderRadius: 3 } }}
-      onClose={() => {
+      onClose={(event, reason) => {
+        const keyboard = (event as { nativeEvent?: KeyboardEvent }).nativeEvent;
+        if (reason === "escapeKeyDown" && (keyboard?.isComposing || keyboard?.keyCode === 229)) return;
         if (dismiss) {
           close();
           dismiss?.();

@@ -68,8 +68,8 @@ export const postLogin = (props: apiTypes.LoginRequest) =>
     notifySessionChange();
     return result;
   }), logActionResult);
-export const postRegister = (props: apiTypes.PostRegisterRequest) =>
-  request((config) => client.postRegister(props, config), { public: true, action: "register" });
+export const postRegister = (props: apiTypes.PostRegisterRequest, options: RequestOptions = {}) =>
+  request((config) => client.postRegister(props, config), { ...options, public: true, action: "register" });
 export const deleteLogout = async (props: apiTypes.DeleteLogoutRequest) => {
   if (getPushApproved()) {
     // Push cleanup is best effort; its failure must not prevent server-side logout.
@@ -97,10 +97,11 @@ export const deleteLogout = async (props: apiTypes.DeleteLogoutRequest) => {
 export const postBbsPost = (
   props: apiTypes.PostBbsPostRequest,
   files: File[],
+  options: RequestOptions = {},
 ) =>
   request((config) =>
     client.postBbsPost({ props: JSON.stringify(props), data: files }, config),
-    { action: "post_create" },
+    { ...options, action: "post_create" },
   );
 
 export const getSpecialroomApply = async (

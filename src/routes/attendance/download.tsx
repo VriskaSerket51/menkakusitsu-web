@@ -26,7 +26,7 @@ import { InfoTable } from "@/features/specialroom/info-panel";
 import { setFooterActive, setHeaderActive } from "@/hooks/use-navbar";
 
 export default function DownloadScreen() {
-  const { loadError, trackLoad } = useLoadError();
+  const { loadError, trackLoad, retry } = useLoadError();
 
   const [attendanceInfo, setAttendanceInfo] =
     useState<apiTypes.AttendanceList | null>(null);
@@ -76,7 +76,7 @@ export default function DownloadScreen() {
         <Button color="inherit" component={Link} to="/attendance/info">돌아가기</Button>
         <Button color="primary" variant="contained" onClick={() => window.print()} disabled={isLoading || Boolean(loadError)}>인쇄</Button>
       </Stack>
-      <LoadError message={loadError} />
+      <LoadError message={loadError} onRetry={retry} />
       <Box
         sx={{
           width: "100%",

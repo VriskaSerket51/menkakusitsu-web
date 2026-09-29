@@ -51,3 +51,13 @@ export function Layout({ children }: { children: ReactNode }) {
 
 export function HydrateFallback() { return null; }
 export default function Root() { return <Outlet />; }
+
+/** Keep the fallback independent of the theme, session and application providers. */
+export function ErrorBoundary() {
+  return <main style={{ maxWidth: 640, margin: "64px auto", padding: 24 }}>
+    <h1>화면을 표시하지 못했습니다.</h1>
+    <p>잠시 후 다시 시도해주세요. 새로고침하면 저장하지 않은 입력은 사라질 수 있습니다.</p>
+    <button type="button" onClick={() => window.location.reload()}>새로고침</button>
+    <p><a href="/">홈으로 돌아가기</a></p>
+  </main>;
+}

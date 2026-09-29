@@ -1,3 +1,5 @@
+import { getApiError } from "@/api/errors";
+import { FormError } from "@/components/form-error";
 import { useState } from "react";
 import { useFormSubmission } from "@/hooks/use-form-submission";
 import { notify } from "@/components/snackbar/notify";
@@ -13,7 +15,7 @@ export default function RegisterPanel() {
   const navigate = useNavigate();
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const { onSubmit: onPostRegister, submitting } = useFormSubmission(async (event: React.SubmitEvent<HTMLFormElement>) => {
+  const { onSubmit: onPostRegister, submitting, submitError, onKeyDownCapture } = useFormSubmission(async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     setErrors({});
     const data = new FormData(event.currentTarget);
@@ -42,10 +44,15 @@ export default function RegisterPanel() {
         email: email,
         id: id,
         password: utilities.hashSha3(password),
-      });
+      }, { silent: true });
       notify("회원가입 성공!", "success");
       navigate("/");
-    } catch { /* The API client displays request failures. */ }
+    } catch (error) {
+      const problem = getApiError(error);
+      const field = ({ LOGIN_ID_TAKEN: "id", STUDENT_NUMBER_TAKEN: "sid", NAME_TAKEN: "name" } as Record<string, string>)[problem?.code ?? ""];
+      if (field && problem) setErrors({ [field]: problem.message });
+      else throw error;
+    }
   });
 
   return (
@@ -70,15 +77,17 @@ export default function RegisterPanel() {
       </TitleText>
       <Box
         component="form"
-        onSubmit={onPostRegister}
+        onKeyDownCapture={onKeyDownCapture} aria-busy={submitting} onSubmit={onPostRegister}
         sx={{ mt: 1, width: "100%", maxWidth: 480 }}
       >
+        <FormError message={submitError} />
         <TextField
           margin="normal"
           required
           fullWidth
           size="small"
           name="name"
+          onChange={() => setErrors(current => ({ ...current, name: "" }))}
           error={Boolean(errors.name)}
           helperText={errors.name}
           label="이름"
@@ -90,6 +99,7 @@ export default function RegisterPanel() {
           fullWidth
           size="small"
           name="sid"
+          onChange={() => setErrors(current => ({ ...current, sid: "" }))}
           label="학번"
           type="number"
           sx={{ appearance: "none" }}
@@ -112,6 +122,7 @@ export default function RegisterPanel() {
           fullWidth
           size="small"
           name="id"
+          onChange={() => setErrors(current => ({ ...current, id: "" }))}
           error={Boolean(errors.id)}
           helperText={errors.id}
           label="아이디"
@@ -123,6 +134,7 @@ export default function RegisterPanel() {
           fullWidth
           size="small"
           name="password"
+          onChange={() => setErrors(current => ({ ...current, passwordCheck: "" }))}
           label="비밀번호"
           type="password"
           autoComplete="new-password"
